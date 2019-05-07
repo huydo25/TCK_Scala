@@ -21,8 +21,8 @@ object Main{
 
     // Reshape raw data into MTS
     var X : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
-    for(i <- 0 to x.length -1 ){
-      for (j <- 0 to x(i).length-1){
+    for(i <- 0 until x.length ){
+      for (j <- 0 until x(i).length){
         if ( j < (x(i).length/2)){
           X(i)(j)(0) = x(i)(j)
           //println(j, x(i)(j))
@@ -35,13 +35,13 @@ object Main{
     }
     // label data
     var Y = Array.fill(200)(1)
-    for (i <- 100 to Y.length -1 ){
+    for (i <- 100 until  Y.length  ){
       Y(i) += 1
     }
     // Reshape xte raw data into MTS
     var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
-    for(i <- 0 to xte.length -1 ){
-      for (j <- 0 to xte(i).length-1){
+    for(i <- 0 until xte.length -1 ){
+      for (j <- 0 until xte(i).length){
         if ( j < (xte(i).length/2)){
           Xte(i)(j)(0) = xte(i)(j)
         }
