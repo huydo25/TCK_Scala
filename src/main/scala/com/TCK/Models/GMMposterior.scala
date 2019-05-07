@@ -2,11 +2,13 @@ package com.TCK.Model
 
 import com.TCK.Ultils.Ultils
 import breeze.linalg._
+import com.TCK.Ultils.Ultils._
 
 object GMM_posterior{
 
   def GMM_posterior(X : Array[Array[Array[Double]]], C: Int, mu: Array[Array[Array[Double]]],
-                    s2: Array[Array[Double]], theta: Array[Double],
+                    // needed update s2
+                    s2: Array[Array[Array[Double]]], theta: Array[Double],
                     dim_idx: Array[Double], time_idx: Array[Double], missing: Int): Unit ={
     //    GMMposterior - Evaluate the posterior for the data X of the GMM described by C, mu, s2 and theta
     //    INPUTS
@@ -24,7 +26,7 @@ object GMM_posterior{
 
     //initialize variables
     val N = X.length
-    var Q = Array.fill(N,C)(0)
+    var Q : Array[Array[Double]]= Array.fill(N,C)(0)
     val sV = dim_idx.length
     val sT = time_idx.length
     //sample of X
@@ -40,7 +42,7 @@ object GMM_posterior{
 
     if (missing == 1 ){
       // handle missing data
-      var nan_idx = Ultils.isNaN(sX)
+      var nan_idx = isNaN(sX)
       var R: Array[Array[Array[Double]]] = Array.fill(N,sV, sT)(1)
       for (i <- 0 to X.length-1){
         for (j <- 0 to X(i).length-1){
@@ -53,15 +55,87 @@ object GMM_posterior{
         }
       }
       // Compute GMM posterior
+      var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sV, sT)
       for (i <- 0 to C-1){
-
-        //        distr_c = normpdf(sX, permute(repmat(mu(:,:,c),[1,1,N]),[3,1,2]), permute(repmat(sqrt(s2(:,c)),[1,N,sT]),[2,3,1]) ).^R;
-        //        distr_c(distr_c < normpdf(3)) = normpdf(3);
-        //        distr_c = reshape(distr_c,[N,sV*sT]);
-        //        Q(:,c) = theta(c)*prod(distr_c,2);
-
+        var temp: Double = 0
+        for (j <- 0 to N){
+          for (k <- 0 to sV) {
+            for (l <- 0 to sT){
+              // need to update in term of dimension array
+              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+              if (temp < normpdf(3)) {
+                temp = normpdf(3)
+              }
+              distr_c(j)(k)(l) = temp
+            }
+          }
+        }
+        //reshape distribution vector
+        var temp1: Array[Array[Double]] = Array.ofDim(N, sV*sT)
+        for (l <- 0 to N){
+          for (j <- 0 to sV){
+            for (k <- 0 to sT){
+              temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+            }
+          }
+        }
+        // product of distribution function
+        var prod_distrc_c : Array[Double] = Array.fill(N)(1)
+        for (j <- 0 to N){
+          for (k <- 0 to sV*sT){
+            prod_distrc_c(j) *= temp1(j)(k)
+          }
+        }
+        for (j <- 0 to N){
+          Q(j)(i) = prod_distrc_c(j) * theta(i)
+        }
+        //end
       }
-    }
+      //reshape Q
+      // Q = Q./repmat(sum(Q,2),[1,C]);
+    } else if (missing == 0){
+      // Compute GMM posterior
+      var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sV, sT)
+      for (i <- 0 to C-1){
+        var temp: Double = 0
+        for (j <- 0 to N){
+          for (k <- 0 to sV) {
+            for (l <- 0 to sT){
+              // need to update in term of dimension array
+              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+              if (temp < normpdf(3)) {
+                temp = normpdf(3)
+              }
+              distr_c(j)(k)(l) = temp
+            }
+          }
+        }
+        //reshape distribution vector
+        var temp1: Array[Array[Double]] = Array.ofDim(N, sV*sT)
+        for (l <- 0 to N){
+          for (j <- 0 to sV){
+            for (k <- 0 to sT){
+              temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+            }
+          }
+        }
+        // product of distribution function
+        var prod_distrc_c : Array[Double] = Array.fill(N)(1)
+        for (j <- 0 to N){
+          for (k <- 0 to sV*sT){
+            prod_distrc_c(j) *= temp1(j)(k)
+          }
+        }
+        for (j <- 0 to N){
+          Q(j)(i) = prod_distrc_c(j) * theta(i)
+        }
+        //end
+      }
+      //reshape Q
+      // Q = Q./repmat(sum(Q,2),[1,C]);
+
+    } else
+      sys.error("The value of the variable missing is not 0 or 1")
   }
 }
 
