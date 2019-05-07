@@ -52,7 +52,6 @@ object GMM_posterior{
           }
         }
       }
-
       // Compute GMM posterior
       for (i <- 0 to C-1){
 
