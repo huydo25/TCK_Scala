@@ -39,8 +39,7 @@ object GMMposterior{
       }
     }
     //end sample
-
-    if (missing == 1 ){
+    if (missing == 1){
       // handle missing data
       val nan_idx = isNaN(sX)
       val R: Array[Array[Array[Double]]] = Array.fill(N,sV, sT)(1)

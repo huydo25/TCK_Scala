@@ -38,7 +38,7 @@ object Main{
     for (i <- 100 until  Y.length  ){
       Y(i) += 1
     }
-    // Reshape xte raw data into MTS
+    // Reshape xte data into MTS
     var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
     for(i <- 0 until xte.length -1 ){
       for (j <- 0 until xte(i).length){
