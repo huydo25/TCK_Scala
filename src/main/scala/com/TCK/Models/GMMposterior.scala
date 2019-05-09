@@ -9,7 +9,7 @@ object GMMposterior{
   def GMM_posterior(x : Array[Array[Array[Double]]], C: Int, mu: Array[Array[Array[Double]]],
                     // needed update s2
                     s2: Array[Array[Array[Double]]], theta: Array[Double],
-                    dim_idx: Array[Double], time_idx: Array[Double], missing: Int): Unit ={
+                    dim_idx: Array[Double], time_idx: Array[Double], missing: Int): Array[Array[Double]]={
     //    GMMposterior - Evaluate the posterior for the data X of the GMM described by C, mu, s2 and theta
     //    INPUTS
     //      X: data array of size N x V x T
@@ -135,7 +135,9 @@ object GMMposterior{
 
     } else
       sys.error("The value of the variable missing is not 0 or 1")
+    Q
   }
+
 }
 
 
