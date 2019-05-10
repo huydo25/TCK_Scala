@@ -1,8 +1,11 @@
 package com.TCK.Model
 
 import breeze.linalg._
+
 import scala.math._
 import breeze.numerics._
+import com.TCK.Ultils.Ultils.isNaN
+
 import scala.util.Random
 
 object  GMM_MAP_EM{
@@ -59,8 +62,7 @@ object  GMM_MAP_EM{
     //Randomly subsample dimensions, time intervals and samples
     var sN: Int = 0
     if(N > 100){
-      val rnd = new Random
-      sN = round(minN*N).toInt + rnd.nextInt(N - round(minN*N).toInt +1)
+      sN = round(minN*N).toInt + Random.nextInt(N - round(minN*N).toInt +1)
     } else {
       sN = round(0.9*N).toInt
     }
@@ -68,7 +70,58 @@ object  GMM_MAP_EM{
     sub_idx = Random.shuffle(1 to N).take(sN).sortWith(_<_).toArray
 
     val sV =  minV + Random.nextInt(maxV - minV +1)
-    val dim_idx = Random.shuffle(1 to V).take(sV).sortWith(_<_).toArray
+    val dim_idx = Random.shuffle(1 to V).take(sV).sortWith(_<_).toArray//generate sV (sorted) integers between 1 and V
+
+    val t1 =  1 + Random.nextInt(T-minT+1)
+    val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1)
+    val sT = t2 - t1 +1
+    val time_idx: Array[Double] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
+
+    val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
+    for (i <- 0 until sub_idx.length){
+      for (j <- 0 until time_idx.length){
+        for (k <- 0 until dim_idx.length ){
+          sX(i)(j)(k) = x(sub_idx(i))(time_idx(j))(dim_idx(k))
+        }
+      }
+    }
+
+    if (missing == 1 ){
+      // handle missing data
+      val nan_idx = isNaN(sX)
+      val R: Array[Array[Array[Double]]] = Array.fill(N,sV, sT)(1)
+      for (i <- 0 until x.length){
+        for (j <- 0 until x(i).length){
+          for (k <- 0 until x(i)(j).length){
+            if (nan_idx(i)(j)(k) == 1 ){
+              R(i)(j)(k) = 0
+//              sX(i)(j)(k) = -100000
+            }
+          }
+        }
+      }
+
+    //Calculate empirical moments
+      var mu_0 : Array[Array[Double]] = Array.fill(sT,sV)(0) // prior mean over time and variables (sT x sV)
+      for (v <- 0 until sV){
+
+      }
+//      for v = 1:sV
+//      mu_0(:,v) = nanmean(sX(:,:,v),1);
+//      end
+//      s_0 = zeros(sV,1); % prior std over variables (sV x 1)
+//      tempX = reshape(sX,[sN*sT,sV]);
+//      for v = 1:sV
+//      s_0(v) = nanstd(tempX(:,v),0,1);
+//      end
+//      s2_0 = s_0.^2;
+
+
+    }  else if (missing == 0 ){
+
+    } else {
+
+    }
 
 
   }
