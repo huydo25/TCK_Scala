@@ -30,6 +30,7 @@ object Ultils{
     val y: Double = exp(-0.5 * pow(((x - mu) / sigma),2 ) ) / (sqrt(2*Pi) * sigma)
     y
   }
+
   def nanmean2D(x : Array[Array[Double]], dim: Int = 1): Array[Double]={
     var mean: Array[Double] = Array()
     if (dim == 2 ){
@@ -73,9 +74,9 @@ object Ultils{
     } else {
       sys.error("dimension is between 0 and 1")
     }
+
     mean
   }
-
 
 }
 

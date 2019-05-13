@@ -4,7 +4,7 @@ import breeze.linalg._
 
 import scala.math._
 import breeze.numerics._
-import com.TCK.Ultils.Ultils.isNaN
+import com.TCK.Ultils.Ultils._
 
 import scala.util.Random
 
@@ -102,14 +102,27 @@ object  GMM_MAP_EM{
       }
 
     //Calculate empirical moments
+      // init variable
       var mu_0 : Array[Array[Double]] = Array.fill(sT,sV)(0) // prior mean over time and variables (sT x sV)
-      for (v <- 0 until sV){
-
+      var temp: Array[Array[Array[Double]]]= Array.ofDim(sX(0)(0).length, sX(0).length, sX.length)
+      var temp1 : Array[Array[Double]] = Array.ofDim( sX(0).length,  sX.length)
+      // reshape array
+      for (j <- 0 until sX(0)(0).length) {
+        // reset value of array then assign
+        temp1 = Array.fill( sX(0).length,  sX.length)(0)
+        for (i <- 0 until sX(0).length) {
+          temp1(i) = sX.map(_(i)).map(_(j))
+        }
+        temp(j) = temp1
       }
-//      for v = 1:sV
-//      mu_0(:,v) = nanmean(sX(:,:,v),1);
-//      end
-//      s_0 = zeros(sV,1); % prior std over variables (sV x 1)
+      // mean over the array
+      for (i <- 0 until temp(0).length){
+        //      println(temp.length, temp(0).length, temp(0)(0).length)
+        var a = nanmean2D(temp.map(_(i)), 1)
+        mu_0(i) = a
+      }
+
+      var s_0: Array[Double] = Array.fill(sV)(1) // prior std over variables (sV x 1)
 //      tempX = reshape(sX,[sN*sT,sV]);
 //      for v = 1:sV
 //      s_0(v) = nanstd(tempX(:,v),0,1);
