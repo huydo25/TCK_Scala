@@ -121,14 +121,23 @@ object  GMM_MAP_EM{
         var a = nanmean2D(temp.map(_(i)), 1)
         mu_0(i) = a
       }
-
+      // reshape 3D array to 2D
       var s_0: Array[Double] = Array.fill(sV)(1) // prior std over variables (sV x 1)
-//      tempX = reshape(sX,[sN*sT,sV]);
-//      for v = 1:sV
-//      s_0(v) = nanstd(tempX(:,v),0,1);
-//      end
-//      s2_0 = s_0.^2;
-
+      var tempX : Array[Array[Double]] = Array.ofDim(sV, sN*sT)
+      // println(tempX.length, tempX(0).length)
+      for (i <- 0 until sX(0)(0).length){
+        var temp:  Array[Double] = Array()
+        for (j <- 0 until sX(0).length ){
+          temp = temp ++ sX.map(_(j)).map(_(i))
+        }
+        //println(temp.deep.mkString("\n"))
+        tempX(i) = temp
+      }
+     // println(tempX.deep.mkString("\n"))
+      //println("\n")
+      tempX = tempX.transpose
+      s_0 = nanstd2D(tempX,0,0)
+      var s2_0 = s_0.map(x => x*x)
 
     }  else if (missing == 0 ){
 
