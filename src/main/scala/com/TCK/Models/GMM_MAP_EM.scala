@@ -47,7 +47,7 @@ object  GMM_MAP_EM{
     } else{
       var minV = 2
     }
-    assert( minV >= 1 && minV <= V, "The minimum number of variables must be in [1,V]")
+    assert(minV >= 1 && minV <= V, "The minimum number of variables must be in [1,V]")
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
     assert(minT >= 1 && minT <= T, "The minimum number of variables must be in [1,T]")
     assert(maxT >= 1 && maxT <= T, "The maximum number of variables must be in [1,T]")
@@ -138,6 +138,55 @@ object  GMM_MAP_EM{
       tempX = tempX.transpose
       s_0 = nanstd2D(tempX,0,0)
       var s2_0 = s_0.map(x => x*x)
+
+      var S_0, invS_0 : Array[Array[Array[Double]]] = Array.fill(sV, sT, sT)(0)
+
+      var T1 : Array[Array[Int]] = Array.fill(sT)(1 to sT toArray).transpose
+      var T2 : Array[Array[Int]] = Array.fill(sT)(1 to sT toArray)
+      var  r: Array[Array[Double]] = Array()
+
+      for (v <- 0 until sV){
+        r = Array.ofDim(T1.length,T1.length)
+        for (i <- 0 until T1.length){
+          for (j <- 0 until T1.length){
+            r(i)(j) = s_0(i) * b0 * exp(-a0 * pow((T1(i)(j) - T2(i)(j),2)))
+          }
+        }
+        //S_0(v) = r
+        // if matrix is inverted
+        var t = DenseMatrix(r:_*)
+        if ( det(t) != 0 ){  // check if the matrix can be inverted
+          t = t + 0.1*t(1,1)* DenseMatrix.eye[Double](T1.length)  // add a small number to the diagonal
+        }
+        val inv_t = inv(t)
+        for (i <- 0 until inv_t.rows ){
+          r(i) = inv_t(::,i).toArray
+        }
+      }
+
+      // initialize model parameters
+      var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+      var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
+      var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
+      var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+
+      for (i <- 0 until x.length){
+        for (j <- 0 until x(i).length){
+          for (k <- 0 until x(i)(j).length){
+            if (nan_idx(i)(j)(k) == 1 ){
+              sX(i)(j)(k) = -100000
+            }
+          }
+        }
+      }
+
+      for (i <- 0 until I){
+        // initialization: random clusters assignment
+        if (i == 1){
+
+        }
+      }
+
 
     }  else if (missing == 0 ){
 
