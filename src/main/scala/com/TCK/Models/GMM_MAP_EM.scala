@@ -183,6 +183,53 @@ object  GMM_MAP_EM{
       for (i <- 0 until I){
         // initialization: random clusters assignment
         if (i == 1){
+          val cluster: Array[Int] = Array.fill(sN)(Random.nextInt(C))
+          val temp: Array[Int] = (1 to C).toArray
+          Q.indices.map(i => Q(i).indices.map(j => if (cluster(i) == temp(j)) Q (i)(j) = 1 else Q (i)(j) = 0))
+        }
+        // update clusters assignment
+        else{
+          // start
+          var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sV, sT)
+          for (i <- 0 until C){
+            var temp: Double = 0
+            for (j <- 0 until sN){
+              for (k <- 0 until sV) {
+                for (l <- 0 until sT){
+                  // need to update in term of dimension array
+                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+                  if (temp < normpdf(3)) {
+                    temp = normpdf(3)
+                  }
+                  distr_c(j)(k)(l) = temp
+                }
+              }
+            }
+            //reshape distribution vector
+            var temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
+            for (l <- 0 until sN){
+              for (j <- 0 until sV){
+                for (k <- 0 until sT){
+                  temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+                }
+              }
+            }
+            // product of distribution function
+            var prod_distrc_c : Array[Double] = Array.fill(sN)(1)
+            for (j <- 0 until sN){
+              for (k <- 0 until sV*sT){
+                prod_distrc_c(j) *= temp1(j)(k)
+              }
+            }
+            for (j <- 0 until sN){
+              Q(j)(i) = prod_distrc_c(j) * theta(i)
+            }
+            //end
+          }
+          //reshape Q
+          // Q = Q./repmat(sum(Q,2),[1,C]);
+          //end
+
 
         }
       }

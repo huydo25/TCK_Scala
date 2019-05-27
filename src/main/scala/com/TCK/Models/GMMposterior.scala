@@ -1,6 +1,5 @@
 package com.TCK.Model
 
-import com.TCK.Ultils.Ultils
 import breeze.linalg._
 import com.TCK.Ultils.Ultils._
 
@@ -55,7 +54,7 @@ object GMMposterior{
       }
       // Compute GMM posterior
       var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sV, sT)
-      for (i <- 0 until  C-1){
+      for (i <- 0 until  C){
         var temp: Double = 0
         for (j <- 0 until N){
           for (k <- 0 until sV) {
