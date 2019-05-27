@@ -89,13 +89,13 @@ object  GMM_MAP_EM{
     if (missing == 1 ){
       // handle missing data
       val nan_idx = isNaN(sX)
-      val R: Array[Array[Array[Double]]] = Array.fill(N,sV, sT)(1)
-      for (i <- 0 until x.length){
-        for (j <- 0 until x(i).length){
-          for (k <- 0 until x(i)(j).length){
+      var R: Array[Array[Array[Double]]] = Array.fill(sN,sT,sV)(1)
+      for (i <- 0 until sX.length){
+        for (j <- 0 until sX(i).length){
+          for (k <- 0 until sX(i)(j).length){
             if (nan_idx(i)(j)(k) == 1 ){
               R(i)(j)(k) = 0
-//              sX(i)(j)(k) = -100000
+             //sX(i)(j)(k) = -100000
             }
           }
         }
@@ -226,12 +226,37 @@ object  GMM_MAP_EM{
             }
             //end
           }
-          //reshape Q
-          // Q = Q./repmat(sum(Q,2),[1,C]);
+          val sum = Array.fill(C)(Q.map(_.sum)).transpose
+          Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sum(i)(j)))
           //end
-
-
         }
+        // update mu, s2 and theta
+        for (c <- 0 until C){
+          val sumQ = Q.map(_(c)).sum
+          theta(c) = sumQ/sN
+          for (v <- 0 until sV ){
+            val var2 = DenseVector(R.map(_.map(_(v)).sum):_*).t * DenseVector(Q.map(_(c)):_*) // be careful with transpose
+            val temp_var2 = DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*).map(x => x*x)
+            val var1 = DenseVector(Q.map(_(c)):_*).t dot
+                                          sum(DenseMatrix(R.map(_.map(_(v))):_*) * temp_var2, Axis._1).t
+
+            s2(v)(c) = (n0*s2_0(v) + var1) / (n0 + var2)
+          }
+        }
+//        for c=1:C
+//        theta(c) = sum(Q(:,c))/sN;
+//        for v=1:sV
+//        var2 = sum(R(:,:,v),2)'*Q(:,c);
+//        temp = (sX(:,:,v) - repmat(mu(:,v,c)',[sN,1]) ).^2;
+//        var1 = Q(:,c)'*sum((R(:,:,v).*temp),2);
+//        s2(v,c) = (n0*s2_0(v)+var1) / (n0+var2);
+//
+//        A =  invS_0(:,:,v) + diag(R(:,:,v)'*Q(:,c)/ s2(v,c));
+//        b =  invS_0(:,:,v)*mu_0(:,v) + (R(:,:,v).*sX(:,:,v))'*Q(:,c)/s2(v,c);
+//        mu(:,v,c) = A\b;
+//        end
+//        end
+//        end % end for i=1:I
       }
 
 

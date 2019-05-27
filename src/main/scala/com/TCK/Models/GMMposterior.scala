@@ -89,8 +89,9 @@ object GMMposterior{
         }
         //end
       }
-      //reshape Q
-      // Q = Q./repmat(sum(Q,2),[1,C]);
+      val sum = Array.fill(C)(Q.map(_.sum)).transpose
+      Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sum(i)(j)))
+
     } else if (missing == 0){
       // Compute GMM posterior
       var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sV, sT)
@@ -130,7 +131,8 @@ object GMMposterior{
         //end
       }
       //reshape Q
-      // Q = Q./repmat(sum(Q,2),[1,C]);
+      val sum = Array.fill(C)(Q.map(_.sum)).transpose
+      Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sum(i)(j)))
 
     } else
       sys.error("The value of the variable missing is not 0 or 1")
