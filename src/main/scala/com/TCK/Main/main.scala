@@ -1,7 +1,7 @@
 package com.TCK.main
 
 import scala.io.Source
-
+import com.TCK.Models.trainTCK._
 
 object Main{
 
@@ -52,6 +52,8 @@ object Main{
     }
     val Yte =Y
     print(Xte(0).deep.mkString("\n"))
+    trainTCK(X)
   }
+
 
 }

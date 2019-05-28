@@ -1,10 +1,10 @@
 package com.TCK.Models
 
-import breeze.linalg.{DenseMatrix, DenseVector, _}
+import breeze.linalg.{Axis, DenseMatrix, DenseVector, det, diag, inv, sum}
 
 import scala.math._
-import breeze.numerics._
-import com.TCK.Models.GMMposterior
+import breeze.numerics.{pow}
+import com.TCK.Models.GMMposterior._
 import com.TCK.Ultils.Ultils._
 
 import scala.util.Random
@@ -14,7 +14,7 @@ object  GMM_MAP_EM{
                   C: Int = 40, minN: Double = 0.8,
                   minV: Int = 2, maxV: Int = 100,
                   minT : Int =6, maxT: Int = 25,
-                  I: Int = 20,  missing: Int = 2) :
+                  I: Int = 20,  missing: Int = 0) :
                   (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int]) = {
 //    MAP_EM - fit a GMM to time series data with missing values using MAP-EM
 //
@@ -53,8 +53,8 @@ object  GMM_MAP_EM{
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
     assert(minT >= 1 && minT <= T, "The minimum number of variables must be in [1,T]")
     assert(maxT >= 1 && maxT <= T, "The maximum number of variables must be in [1,T]")
-    var maxT_new = 0
-    maxT_new = min(floor(0.8*T), maxT)
+    var maxT_new = 0.0
+    maxT_new = math.min(math.floor(0.8*T), maxT)
 
     // Hyperparameters for mean prior (a0, b0) and the std dev prior (n0) of the mixture components
     var a0 : Double = ( 1   - 0.001 ) * random + 0.001
@@ -64,9 +64,9 @@ object  GMM_MAP_EM{
     //Randomly subsample dimensions, time intervals and samples
     var sN: Int = 0
     if(N > 100){
-      sN = round(minN*N).toInt + Random.nextInt(N - round(minN*N).toInt +1)
+      sN = math.round(minN*N).toInt + Random.nextInt(N - math.round(minN*N).toInt +1)
     } else {
-      sN = round(0.9*N).toInt
+      sN = math.round(0.9*N).toInt
     }
     var sub_idx: Array[Int] = Array.ofDim(sN)
     sub_idx = Random.shuffle(1 to N).take(sN).sortWith(_<_).toArray
@@ -90,9 +90,9 @@ object  GMM_MAP_EM{
 
     // initialize model parameters
     var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-    var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
-    var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
-    var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+    var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0.0) // cluster means         (sT x sV x C)
+    var s2 : Array[Array[Double]] = Array.fill(sV, C)(0.0)            // cluster variances     (sV x C)
+    var Q : Array[Array[Double]] = Array.fill(sN, C)(0.0)             // cluster assignments   (sN x C)
 
     if (missing == 1 ){
       // handle missing data
@@ -157,7 +157,7 @@ object  GMM_MAP_EM{
         r = Array.ofDim(T1.length,T1.length)
         for (i <- 0 until T1.length){
           for (j <- 0 until T1.length){
-            r(i)(j) = s_0(i) * b0 * exp(-a0 * pow((T1(i)(j) - T2(i)(j),2)))
+            r(i)(j) = s_0(i) * b0 * math.exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
           }
         }
         //S_0(v) = r
@@ -206,7 +206,7 @@ object  GMM_MAP_EM{
               for (k <- 0 until sV) {
                 for (l <- 0 until sT){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
@@ -396,7 +396,7 @@ object  GMM_MAP_EM{
             val A =  DenseMatrix(invS_0(v):_*) + (sumQ/s2(v)(c))* DenseMatrix.eye[Double](sT)
             val b =  DenseMatrix(invS_0(v):_*) * DenseMatrix(mu_0.map(_(v)):_*) + DenseMatrix(sX.map(_.map(_(v))):_*).t * DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)
             val temp_r : Array[Double] = (A \ b).toArray
-            mu.map(_.map(_(c))).map(_(v)).map(x => mu(x)(v)(c) = temp_r(x))
+            mu.map(_.map(_(c))).map(_(v)).map(z => mu(z)(v)(c) = temp_r(z))
           }
         }
       } // end for i=1:I
