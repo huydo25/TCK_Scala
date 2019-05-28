@@ -1,9 +1,10 @@
-package com.TCK.Model
+package com.TCK.Models
 
 import breeze.linalg.{DenseMatrix, DenseVector, _}
 
 import scala.math._
 import breeze.numerics._
+import com.TCK.Models.GMMposterior
 import com.TCK.Ultils.Ultils._
 
 import scala.util.Random
@@ -13,7 +14,8 @@ object  GMM_MAP_EM{
                   C: Int = 40, minN: Double = 0.8,
                   minV: Int = 2, maxV: Int = 100,
                   minT : Int =6, maxT: Int = 25,
-                  I: Int = 20,  missing: Int = 2): Unit ={
+                  I: Int = 20,  missing: Int = 2) :
+                  (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int]) = {
 //    MAP_EM - fit a GMM to time series data with missing values using MAP-EM
 //
 //    INPUTS
@@ -43,9 +45,9 @@ object  GMM_MAP_EM{
     // optional parameters
     assert(minN > 0 && minN <= 1, "The minimum percentage of subsample must be in (0,1]" )
     if (V == 1){
-      var minV = 1
+      val minV = 1
     } else{
-      var minV = 2
+      val minV = 2
     }
     assert(minV >= 1 && minV <= V, "The minimum number of variables must be in [1,V]")
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
@@ -70,12 +72,12 @@ object  GMM_MAP_EM{
     sub_idx = Random.shuffle(1 to N).take(sN).sortWith(_<_).toArray
 
     val sV =  minV + Random.nextInt(maxV - minV +1)
-    val dim_idx = Random.shuffle(1 to V).take(sV).sortWith(_<_).toArray//generate sV (sorted) integers between 1 and V
+    val dim_idx : Array[Int] = Random.shuffle(1 to V).take(sV).sortWith(_<_).toArray//generate sV (sorted) integers between 1 and V
 
     val t1 =  1 + Random.nextInt(T-minT+1)
     val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1)
     val sT = t2 - t1 +1
-    val time_idx: Array[Double] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
+    val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
 
     val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
     for (i <- 0 until sub_idx.length){
@@ -85,6 +87,12 @@ object  GMM_MAP_EM{
         }
       }
     }
+
+    // initialize model parameters
+    var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+    var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
+    var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
+    var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
 
     if (missing == 1 ){
       // handle missing data
@@ -166,10 +174,10 @@ object  GMM_MAP_EM{
       }
 
       // initialize model parameters
-      var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-      var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
-      var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
-      var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+      //  var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+      //  var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
+      //  var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
+      //  var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
 
       for (i <- 0 until x.length){
         for (j <- 0 until x(i).length){
@@ -207,7 +215,7 @@ object  GMM_MAP_EM{
               }
             }
             //reshape distribution vector
-            var temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
+            val temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
             for (l <- 0 until sN){
               for (j <- 0 until sV){
                 for (k <- 0 until sT){
@@ -216,7 +224,7 @@ object  GMM_MAP_EM{
               }
             }
             // product of distribution function
-            var prod_distrc_c : Array[Double] = Array.fill(sN)(1)
+            val prod_distrc_c : Array[Double] = Array.fill(sN)(1)
             for (j <- 0 until sN){
               for (k <- 0 until sV*sT){
                 prod_distrc_c(j) *= temp1(j)(k)
@@ -319,10 +327,10 @@ object  GMM_MAP_EM{
       }
 
       // initialize model parameters
-      var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-      var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
-      var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
-      var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+      // var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+      // var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
+      // var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
+      // var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
 
       for (i <- 0 until I){
         // initialization: random clusters assignment
@@ -334,7 +342,7 @@ object  GMM_MAP_EM{
         // update clusters assignment
         else{
           // start
-          var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sV, sT)
+          val distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sV, sT)
           for (i <- 0 until C){
             var temp: Double = 0
             for (j <- 0 until sN){
@@ -382,7 +390,7 @@ object  GMM_MAP_EM{
           for (v <- 0 until sV ){
             val var2 = sT * sumQ
             val temp_var2 = DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*).map(x => x*x)
-            val var1 =  DenseVector(Q.map(_(c)):_*).t dot sum( temp, Axis._1)
+            val var1 =  DenseVector(Q.map(_(c)):_*).t dot sum(temp_var2, Axis._1)
             s2(v)(c) = (n0*s2_0(v) + var1) / (n0 + var2)
 
             val A =  DenseMatrix(invS_0(v):_*) + (sumQ/s2(v)(c))* DenseMatrix.eye[Double](sT)
@@ -394,11 +402,12 @@ object  GMM_MAP_EM{
       } // end for i=1:I
 
       // compute assignments for all data
-      Q  = GMMposterior(x, C, mu, s2, theta, dim_idx, time_idx, missing );
+      Q  = GMMposterior(x, C, mu, s2, theta, dim_idx, time_idx, missing )
 
     } else {
       sys.error("The value of the variable missing is not 0 or 1")
     }
-
+    (Q , mu, s2, theta, dim_idx, time_idx)
   }
+
 }

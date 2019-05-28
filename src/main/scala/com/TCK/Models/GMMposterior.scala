@@ -1,4 +1,4 @@
-package com.TCK.Model
+package com.TCK.Models
 
 import breeze.linalg._
 import com.TCK.Ultils.Ultils._
