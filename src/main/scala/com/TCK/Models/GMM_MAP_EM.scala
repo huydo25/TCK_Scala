@@ -206,7 +206,7 @@ object  GMM_MAP_EM{
               for (k <- 0 until sV) {
                 for (l <- 0 until sT){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k))
+                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
@@ -253,13 +253,13 @@ object  GMM_MAP_EM{
             val A = DenseMatrix(invS_0(v):_*) + diag(DenseMatrix(R.map(_.map(_(v))):_*).t * DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)).toDenseMatrix
             val b = DenseMatrix(invS_0(v):_*) * DenseMatrix(mu_0.map(_(v)):_*) :* DenseMatrix(sX.map(_.map(_(v))):_*).t *  DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)
             val temp_r : Array[Double] = (A \ b).toArray
-            mu.map(_.map(_(c))).map(_(v)).map(x => mu(x)(v)(c) = temp_r(x))
+            mu.map(_.map(_(c))).map(_(v)).indices.map(x => mu(x)(v)(c) = temp_r(x) )
           }
         }
       } // end for i=1:I
 
       // compute assignments for all data
-      Q  = GMMposterior(x, C, mu, s2, theta, dim_idx, time_idx, missing );
+      Q  = GMMposterior( x, C, mu, s2, theta, dim_idx, time_idx, missing)
 
     }  else if (missing == 0 ){
       //Calculate empirical moments
@@ -310,7 +310,7 @@ object  GMM_MAP_EM{
         r = Array.ofDim(T1.length,T1.length)
         for (i <- 0 until T1.length){
           for (j <- 0 until T1.length){
-            r(i)(j) = s_0(i) * b0 * exp(-a0 * pow((T1(i)(j) - T2(i)(j),2)))
+            r(i)(j) = s_0(i) * b0 * exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
           }
         }
         //S_0(v) = r
@@ -349,7 +349,7 @@ object  GMM_MAP_EM{
               for (k <- 0 until sV) {
                 for (l <- 0 until sT){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
@@ -396,13 +396,13 @@ object  GMM_MAP_EM{
             val A =  DenseMatrix(invS_0(v):_*) + (sumQ/s2(v)(c))* DenseMatrix.eye[Double](sT)
             val b =  DenseMatrix(invS_0(v):_*) * DenseMatrix(mu_0.map(_(v)):_*) + DenseMatrix(sX.map(_.map(_(v))):_*).t * DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)
             val temp_r : Array[Double] = (A \ b).toArray
-            mu.map(_.map(_(c))).map(_(v)).map(z => mu(z)(v)(c) = temp_r(z))
+            mu.map(_.map(_(c))).map(_(v)).indices.map(x => mu(x)(v)(c) = temp_r(x) )
           }
         }
       } // end for i=1:I
 
       // compute assignments for all data
-      Q  = GMMposterior(x, C, mu, s2, theta, dim_idx, time_idx, missing )
+      Q  = GMMposterior(x, C, mu, s2, theta, dim_idx, time_idx, missing)
 
     } else {
       sys.error("The value of the variable missing is not 0 or 1")

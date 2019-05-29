@@ -7,7 +7,7 @@ object GMMposterior{
 
   def GMM_posterior(x : Array[Array[Array[Double]]], C: Int, mu: Array[Array[Array[Double]]],
                     // needed update s2
-                    s2: Array[Array[Array[Double]]], theta: Array[Double],
+                    s2: Array[Array[Double]], theta: Array[Double],
                     dim_idx: Array[Int], time_idx: Array[Int], missing: Int): Array[Array[Double]]={
     //    GMMposterior - Evaluate the posterior for the data X of the GMM described by C, mu, s2 and theta
     //    INPUTS
@@ -60,7 +60,7 @@ object GMMposterior{
           for (k <- 0 until sV) {
             for (l <- 0 until sT){
               // need to update in term of dimension array
-              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
               if (temp < normpdf(3)) {
                 temp = normpdf(3)
               }
@@ -101,7 +101,7 @@ object GMMposterior{
           for (k <- 0 until sV) {
             for (l <- 0 until sT){
               // need to update in term of dimension array
-              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(j)(k)(l))
+              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
               if (temp < normpdf(3)) {
                 temp = normpdf(3)
               }
