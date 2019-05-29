@@ -1,10 +1,11 @@
 package com.TCK.Models
 
 import com.TCK.Ultils.Ultils._
+import scala.math._
 object trainTCK{
   def trainTCK(x: Array[Array[Array[Double]]],
                C: Int = 40, minN: Double = 0.8,
-               minV: Int = 2, maxV: Int = 100,
+               minV: Int = 1, maxV: Int = 2,
                minT : Int =6, maxT: Int = 25,
                I: Int = 20,  G: Int = 30): Unit = {
 
@@ -48,7 +49,8 @@ object trainTCK{
     } else{
       val minV = 2
     }
-
+    println(maxV)
+    println(V)
     assert(minN > 0 && minN <= 1, "The minimum percentage of subsample must be in (0,1]" )
     assert(minV >= 1 && minV <= V, "The minimum number of variables must be in [1,V]")
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
@@ -72,10 +74,9 @@ object trainTCK{
       missing = 0
       println("The dataset does not contain missing data\n\n")
     }
-    println("Training the TCK using the following parameters:\n C = %d, G =%d\n " +
-            "Number of MTS for each GMM: %d - %d (%d - 100 percent)\n " +
-            "Number of attributes sampled from [%d, %d]\n Length of time segments sampled from [%d, %d]\n\n', " +
-            "C, G, floor(minN*N), N, floor(minN*100), minV, maxV, minT, maxT")
+    println(s"Training the TCK using the following parameters:\n C = $C, G =$G\n " +
+            s"Number of MTS for each GMM: ${floor(minN*N)} - $N (${floor(minN*100)} - 100 percent)\n " +
+            s"Number of attributes sampled from [$minV, $maxV]\n Length of time segments sampled from [$minT, $maxT]\n\n ")
 
   }
 }

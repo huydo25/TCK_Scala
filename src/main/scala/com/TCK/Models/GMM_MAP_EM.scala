@@ -247,7 +247,7 @@ object  GMM_MAP_EM{
             val var2 = DenseVector(R.map(_.map(_(v)).sum):_*).t * DenseVector(Q.map(_(c)):_*) // be careful with transpose
             val temp_var2 = DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*).map(x => x*x)
             val var1 = DenseVector(Q.map(_(c)):_*).t dot
-                                          sum(DenseMatrix(R.map(_.map(_(v))):_*) * temp_var2, Axis._1).t
+                                          sum(DenseMatrix(R.map(_.map(_(v))):_*) :* temp_var2, Axis._1).t
 
             s2(v)(c) = (n0*s2_0(v) + var1) / (n0 + var2)
             val A = DenseMatrix(invS_0(v):_*) + diag(DenseMatrix(R.map(_.map(_(v))):_*).t * DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)).toDenseMatrix
@@ -259,7 +259,7 @@ object  GMM_MAP_EM{
       } // end for i=1:I
 
       // compute assignments for all data
-      Q  = GMMposterior( x, C, mu, s2, theta, dim_idx, time_idx, missing)
+      Q  = GMMposterior.GMM_posterior( x, C, mu, s2, theta, dim_idx, time_idx, missing)
 
     }  else if (missing == 0 ){
       //Calculate empirical moments
@@ -390,7 +390,7 @@ object  GMM_MAP_EM{
           for (v <- 0 until sV ){
             val var2 = sT * sumQ
             val temp_var2 = DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*).map(x => x*x)
-            val var1 =  DenseVector(Q.map(_(c)):_*).t dot sum(temp_var2, Axis._1)
+            val var1 = DenseVector(Q.map(_(c)):_*).t dot sum(temp_var2, Axis._1).t
             s2(v)(c) = (n0*s2_0(v) + var1) / (n0 + var2)
 
             val A =  DenseMatrix(invS_0(v):_*) + (sumQ/s2(v)(c))* DenseMatrix.eye[Double](sT)
@@ -402,7 +402,7 @@ object  GMM_MAP_EM{
       } // end for i=1:I
 
       // compute assignments for all data
-      Q  = GMMposterior(x, C, mu, s2, theta, dim_idx, time_idx, missing)
+      Q  = GMMposterior.GMM_posterior(x, C, mu, s2, theta, dim_idx, time_idx, missing)
 
     } else {
       sys.error("The value of the variable missing is not 0 or 1")

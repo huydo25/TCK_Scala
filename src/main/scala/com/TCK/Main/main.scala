@@ -51,7 +51,7 @@ object Main{
       }
     }
     val Yte =Y
-    print(Xte(0).deep.mkString("\n"))
+//    print(Xte(0).deep.mkString("\n"))
     trainTCK(X)
   }
 
