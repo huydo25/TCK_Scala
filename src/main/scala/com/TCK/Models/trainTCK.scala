@@ -2,6 +2,8 @@ package com.TCK.Models
 
 import com.TCK.Ultils.Ultils._
 import scala.math._
+import com.TCK.Models.GMM_MAP_EM._
+
 object trainTCK{
   def trainTCK(x: Array[Array[Array[Double]]],
                C: Int = 40, minN: Double = 0.8,
@@ -49,8 +51,8 @@ object trainTCK{
     } else{
       val minV = 2
     }
-    println(maxV)
-    println(V)
+//    println(maxV)
+//    println(V)
     assert(minN > 0 && minN <= 1, "The minimum percentage of subsample must be in (0,1]" )
     assert(minV >= 1 && minV <= V, "The minimum number of variables must be in [1,V]")
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
@@ -78,5 +80,15 @@ object trainTCK{
             s"Number of MTS for each GMM: ${floor(minN*N)} - $N (${floor(minN*100)} - 100 percent)\n " +
             s"Number of attributes sampled from [$minV, $maxV]\n Length of time segments sampled from [$minT, $maxT]\n\n ")
 
+    var res : List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]
+         = List()
+
+    for (i <- 0 until (G*(C-1))){
+      val c: Int = (floor((i-1)/G) + 2).toInt
+      res = res :+ GMM_MAP_EM.GMM_MAP_EM(x,c,minN,minV,maxV,minT,maxT,I,missing)
+    }
+
   }
+
+
 }
