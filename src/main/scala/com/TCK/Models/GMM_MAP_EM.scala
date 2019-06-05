@@ -79,10 +79,10 @@ object  GMM_MAP_EM{
     val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1)
     val sT = t2 - t1 +1
     val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
-    println(sub_idx.deep.mkString(" "))
-    println(sV, dim_idx.length)
-    println(time_idx.deep.mkString(" "))
-    println(dim_idx.deep.mkString(" "))
+//    println(sub_idx.deep.mkString(" "))
+//    println(sV, dim_idx.length)
+//    println(time_idx.deep.mkString(" "))
+//    println(dim_idx.deep.mkString(" "))
     val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
     for (i <- 0 until sN){
       for (j <- 0 until sT){
@@ -163,7 +163,7 @@ object  GMM_MAP_EM{
         r = Array.ofDim(T1.length,T1.length)
         for (i <- 0 until T1.length){
           for (j <- 0 until T1.length){
-            r(i)(j) = s_0(i) * b0 * math.exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
+            r(i)(j) = s_0(v) * b0 * math.exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
           }
         }
         //S_0(v) = r
@@ -205,14 +205,14 @@ object  GMM_MAP_EM{
         // update clusters assignment
         else{
           // start
-          var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sV, sT)
+          var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sT, sV)
           for (i <- 0 until C){
             var temp: Double = 0
             for (j <- 0 until sN){
-              for (k <- 0 until sV) {
-                for (l <- 0 until sT){
+              for (k <- 0 until sT) {
+                for (l <- 0 until sV){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
+                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(l)(i))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
@@ -223,9 +223,9 @@ object  GMM_MAP_EM{
             //reshape distribution vector
             val temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
             for (l <- 0 until sN){
-              for (j <- 0 until sV){
-                for (k <- 0 until sT){
-                  temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+              for (j <- 0 until sT){
+                for (k <- 0 until sV){
+                  temp1(l)(k*sT+j) = distr_c(l)(j)(k)
                 }
               }
             }
@@ -310,13 +310,15 @@ object  GMM_MAP_EM{
 
       val T1 : Array[Array[Int]] = Array.fill(sT)(1 to sT toArray).transpose
       val T2 : Array[Array[Int]] = Array.fill(sT)(1 to sT toArray)
+//      println(T1.length, T1(0).length)
+//      println(T2.length, T2(0).length)
+//      println(s_0.length)
       var  r: Array[Array[Double]] = Array()
-
       for (v <- 0 until sV){
         r = Array.ofDim(T1.length,T1.length)
         for (i <- 0 until T1.length){
-          for (j <- 0 until T1.length){
-            r(i)(j) = s_0(i) * b0 * exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
+          for (j <- 0 until T2.length){
+            r(i)(j) = s_0(v) * b0 * exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
           }
         }
         //S_0(v) = r
@@ -348,15 +350,17 @@ object  GMM_MAP_EM{
         // update clusters assignment
         else{
           // start
-          val distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sV, sT)
+          var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sT, sV)
+//          println(sX.length,sX(0).length, sX(0)(0).length)
+//          println(sN, sT, sV)
           for (i <- 0 until C){
             var temp: Double = 0
             for (j <- 0 until sN){
-              for (k <- 0 until sV) {
-                for (l <- 0 until sT){
+              for (k <- 0 until sT) {
+                for (l <- 0 until sV){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
-                  if (temp < normpdf(3)) {
+                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
+                  if (temp < normpdf(3)){
                     temp = normpdf(3)
                   }
                   distr_c(j)(k)(l) = temp
@@ -366,9 +370,10 @@ object  GMM_MAP_EM{
             //reshape distribution vector
             var temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
             for (l <- 0 until sN){
-              for (j <- 0 until sV){
-                for (k <- 0 until sT){
-                  temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+              for (j <- 0 until sT){
+                for (k <- 0 until sV){
+//                  println(temp1(0).length, k*sT+j)
+                  temp1(l)(k*sT+j) = distr_c(l)(j)(k)
                 }
               }
             }
