@@ -2,6 +2,7 @@ package com.TCK.main
 
 import scala.io.Source
 import com.TCK.Models.trainTCK._
+import com.TCK.Models.TCK._
 
 object Main{
 
@@ -52,7 +53,24 @@ object Main{
     }
     val Yte =Y
 //    print(Xte(0).deep.mkString("\n"))
-    trainTCK(X)
+    val gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
+    var C: Int = 0
+    var G: Int = 0
+    (gmmParameter, C, G) = trainTCK(X)
+
+    // Compute in-sample kernel matrix
+    var K = TCK(gmmParameter,C,G,1)
+
+    // % Compute similarity between Xte and the training points
+    var Kte = TCK(gmmParameter,C,G,0,Xte);
+
+    // 1NN -classifier
+//    Nte = length(Yte);
+//    [C,I] = max(Kte);    % find training series with maximum similarity
+//      pred_Y = Y(I);     % 1NN classification
+//    accuracy=sum(pred_Y==Yte)/Nte
+
+
 
     println("Done!!")
   }
