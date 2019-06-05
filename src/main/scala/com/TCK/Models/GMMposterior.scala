@@ -11,7 +11,7 @@ object GMMposterior{
                     dim_idx: Array[Int], time_idx: Array[Int], missing: Int): Array[Array[Double]]={
     //    GMMposterior - Evaluate the posterior for the data X of the GMM described by C, mu, s2 and theta
     //    INPUTS
-    //      X: data array of size N x V x T
+    //      X: data array of size N x T x V
     //      C: number of mixture components (optional)
     //      mu: cluster means over time and variables (V x T)
     //      s2: cluster stds over variables (sV x 1)
@@ -29,10 +29,10 @@ object GMMposterior{
     val sV = dim_idx.length
     val sT = time_idx.length
     //sample of X
-    val sX: Array[Array[Array[Double]]] = Array.ofDim(N,sV, sT)
-    for (i <- 0 until sX.length){
-      for (j <- 0 until sX(i).length){
-        for (k <- 0 until sX(i)(j).length){
+    val sX: Array[Array[Array[Double]]] = Array.ofDim(N,sT,sV)
+    for (i <- 0 until N){
+      for (j <- 0 until sT ){
+        for (k <- 0 until sV ){
           sX(i)(j)(k) = x(i)(time_idx(j))(dim_idx(k))
         }
       }
@@ -41,10 +41,10 @@ object GMMposterior{
     if (missing == 1){
       // handle missing data
       val nan_idx = isNaN(sX)
-      val R: Array[Array[Array[Double]]] = Array.fill(N,sV, sT)(1)
-      for (i <- 0 until x.length){
-        for (j <- 0 until x(i).length){
-          for (k <- 0 until x(i)(j).length){
+      val R: Array[Array[Array[Double]]] = Array.fill(N,sT,sV)(1)
+      for (i <- 0 until N){
+        for (j <- 0 until sT){
+          for (k <- 0 until sV){
             if (nan_idx(i)(j)(k) == 1 ){
               R(i)(j)(k) = 0
               sX(i)(j)(k) = -100000
@@ -53,14 +53,14 @@ object GMMposterior{
         }
       }
       // Compute GMM posterior
-      var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sV, sT)
+      var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sT, sV)
       for (i <- 0 until  C){
         var temp: Double = 0
         for (j <- 0 until N){
-          for (k <- 0 until sV) {
-            for (l <- 0 until sT){
+          for (k <- 0 until sT) {
+            for (l <- 0 until sV){
               // need to update in term of dimension array
-              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
+              temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
               if (temp < normpdf(3)) {
                 temp = normpdf(3)
               }
@@ -71,9 +71,9 @@ object GMMposterior{
         //reshape distribution vector
         var temp1: Array[Array[Double]] = Array.ofDim(N, sV*sT)
         for (l <- 0 until N){
-          for (j <- 0 until sV){
-            for (k <- 0 until sT){
-              temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+          for (j <- 0 until sT){
+            for (k <- 0 until sV){
+              temp1(l)(k*sT+j) = distr_c(l)(j)(k)
             }
           }
         }
@@ -94,14 +94,14 @@ object GMMposterior{
 
     } else if (missing == 0){
       // Compute GMM posterior
-      var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sV, sT)
-      for (i <- 0 until C-1){
+      var distr_c : Array[Array[Array[Double]]] = Array.ofDim(N, sT, sV)
+      for (i <- 0 until C){
         var temp: Double = 0
         for (j <- 0 until N){
-          for (k <- 0 until sV) {
-            for (l <- 0 until sT){
+          for (k <- 0 until sT) {
+            for (l <- 0 until sV){
               // need to update in term of dimension array
-              temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(k)(i))
+              temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
               if (temp < normpdf(3)) {
                 temp = normpdf(3)
               }
@@ -112,9 +112,9 @@ object GMMposterior{
         //reshape distribution vector
         var temp1: Array[Array[Double]] = Array.ofDim(N, sV*sT)
         for (l <- 0 until N){
-          for (j <- 0 until sV){
-            for (k <- 0 until sT){
-              temp1(l)(j*sT+k) = distr_c(l)(j)(k)
+          for (j <- 0 until sT){
+            for (k <- 0 until sV){
+              temp1(l)(k*sT+j) = distr_c(l)(j)(k)
             }
           }
         }

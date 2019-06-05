@@ -7,7 +7,7 @@ import com.TCK.Models.GMM_MAP_EM._
 object trainTCK{
   def trainTCK(x: Array[Array[Array[Double]]],
                C: Int = 40, minN: Double = 0.8,
-               minV: Int = 1, maxV: Int = 2,
+               minV: Int = 2, maxV: Int = 2,
                minT : Int =6, maxT: Int = 25,
                I: Int = 20,  G: Int = 30): Unit = {
 
@@ -85,7 +85,7 @@ object trainTCK{
 
     for (i <- 0 until (G*(C-1))){
       val c: Int = (floor((i-1)/G) + 2).toInt
-      res = res :+ GMM_MAP_EM.GMM_MAP_EM(x,c,minN,minV,maxV,minT,maxT,I,missing)
+      res = res :+ GMM_MAP_EM.GMM_MAP_EM(x,c,minN,minV,V,minT,maxT,I,missing)
     }
 
   }

@@ -12,7 +12,7 @@ import scala.util.Random
 object  GMM_MAP_EM{
   def GMM_MAP_EM(x: Array[Array[Array[Double]]],
                   C: Int = 40, minN: Double = 0.8,
-                  minV: Int = 1, maxV: Int = 100,
+                  minV: Int = 2, maxV: Int = 100,
                   minT : Int = 6, maxT: Int = 25,
                   I: Int = 20,  missing: Int = 0) :
                   (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int]) = {
@@ -42,15 +42,14 @@ object  GMM_MAP_EM{
     val N = x.length
     val T = x(0).length
     val V = x(0)(0).length
-
     // optional parameters
     assert(minN > 0 && minN <= 1, "The minimum percentage of subsample must be in (0,1]" )
-    if (V == 1){
-      val minV = 1
-    } else{
-      val minV = 2
-    }
-    assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
+//    if (V == 1){
+//      val minV = 1
+//    } else{
+//      val minV = 2
+//    }
+    assert(minV >= 1 && minV <= V, "The maximum number of variables must be in [1,V]")
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
     assert(minT >= 1 && minT <= T, "The minimum number of variables must be in [1,T]")
     assert(maxT >= 1 && maxT <= T, "The maximum number of variables must be in [1,T]")
@@ -74,15 +73,13 @@ object  GMM_MAP_EM{
 
     val sV =  minV + Random.nextInt(maxV - minV +1)
     val dim_idx : Array[Int] = Random.shuffle(0 to V-1).take(sV).sortWith(_<_).toArray//generate sV (sorted) integers between 1 and V
-
+//    println(dim_idx.deep.mkString(" "))
     val t1 =  1 + Random.nextInt(T-minT+1)
-    val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1)
+    val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1) - 1
     val sT = t2 - t1 +1
     val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
-//    println(sub_idx.deep.mkString(" "))
-//    println(sV, dim_idx.length)
+//    println(sT, t1, t2)
 //    println(time_idx.deep.mkString(" "))
-//    println(dim_idx.deep.mkString(" "))
     val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
     for (i <- 0 until sN){
       for (j <- 0 until sT){
@@ -93,7 +90,6 @@ object  GMM_MAP_EM{
         }
       }
     }
-
     // initialize model parameters
     var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
     var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0.0) // cluster means         (sT x sV x C)
@@ -212,7 +208,7 @@ object  GMM_MAP_EM{
               for (k <- 0 until sT) {
                 for (l <- 0 until sV){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(j)(k)(l), s2(l)(i))
+                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
