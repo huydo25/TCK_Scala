@@ -53,26 +53,46 @@ object Main{
     }
     val Yte =Y
 //    print(Xte(0).deep.mkString("\n"))
-    val gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
+    var gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
     var C: Int = 0
     var G: Int = 0
-    (gmmParameter, C, G) = trainTCK(X)
+
+    var temp_r = trainTCK(X)
+    gmmParameter = temp_r._1
+    C = temp_r._2
+    G = temp_r._3
+
+//    (gmmParameter, C, G) = trainTCK(X)
 
     // Compute in-sample kernel matrix
     var K = TCK(gmmParameter,C,G,1)
 
     // % Compute similarity between Xte and the training points
     var Kte = TCK(gmmParameter,C,G,0,Xte);
-
+//    println(Kte.deep.mkString("\n"))
     // 1NN -classifier
-//    Nte = length(Yte);
-//    [C,I] = max(Kte);    % find training series with maximum similarity
-//      pred_Y = Y(I);     % 1NN classification
-//    accuracy=sum(pred_Y==Yte)/Nte
-
-
-
-    println("Done!!")
+    val Nte = Yte.length
+    var I : Array[Int] = Array.ofDim(Kte(0).length)
+    for (i <- 0 until Kte(0).length){
+      val temp = Kte.map(_(i))
+//      println(temp.max)
+      I(i) = temp.indexOf(temp.max)
+    }
+    println(I.deep.mkString(" "))
+//    var predY : Array[Double] = Array.ofDim(I.length)
+//    for (i <- I){
+//      predY(i) = Y(i)
+//    }
+//    var sum : Int = 0
+//    for (i <- 0 until Yte.length ){
+//      if (predY(i) == Yte(i)){
+//        sum += 1
+//      }
+//    }
+//    var accuracy : Double = sum / Nte
+//
+//
+//    println("Done!!")
   }
 
 

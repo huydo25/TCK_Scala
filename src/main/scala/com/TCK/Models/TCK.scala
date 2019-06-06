@@ -7,7 +7,7 @@ import com.TCK.Models.GMMposterior._
 
 object TCK {
   def TCK( gmmParameter : List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])] ,
-           C: Int, G: Int, marking: Int = 0 , xte: Array[Array[Array[Double]]] = Array()): Unit ={
+           C: Int, G: Int, marking: Int = 0 , xte: Array[Array[Array[Double]]] = Array()): Array[Array[Double]] ={
   // function [ K ] = TCK(GMM, C, G, Xte)
   // TCK -  compute TCK kernel matrix between training data and test data Xte
   // INPUTS
@@ -48,7 +48,7 @@ object TCK {
     for (k <- 0 until result.rows ){
       K(k) = result(::,k).toArray
     }
-
+    K
   }  else { // in-sample kernel matrix
     var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,gmmParameter(0)._1.length)(0)
     var result: DenseMatrix[Double] = DenseMatrix.zeros(gmmParameter(0)._1.length,gmmParameter(0)._1.length)
@@ -58,8 +58,8 @@ object TCK {
     for (k <- 0 until result.rows ){
       K(k) = result(::,k).toArray
     }
+    K
   }
-
 
 
   }
