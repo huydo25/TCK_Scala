@@ -1,8 +1,8 @@
-package com.TCK.Ultils
+package com.tck.utils
 
 import scala.math._
 
-object Ultils{
+object Utils{
 
   def isNaN(x: Array[Array[Array[Double]]]) : Array[Array[Array[Double]]] =  {
     var binary_vector: Array[Array[Array[Double]]] = Array.ofDim(x.length, x(0).length, x(0)(1).length)

@@ -1,15 +1,15 @@
-package com.TCK.Models
+package com.tck.models
 
-import com.TCK.Ultils.Ultils._
+import com.tck.utils.Utils._
 import scala.math._
-import com.TCK.Models.GMM_MAP_EM._
+import com.tck.models.GMM_MAP_EM._
 
 object trainTCK{
   def trainTCK(x: Array[Array[Array[Double]]],
-               C: Int = 10, minN: Double = 0.8,
+               C: Int = 40, minN: Double = 0.8,
                minV: Int = 2, maxV: Int = 2,
                minT : Int =6, maxT: Int = 25,
-               I: Int = 20,  G: Int = 10): (List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])], Int, Int) = {
+               I: Int = 20,  G: Int = 30): (List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])], Int, Int) = {
 
     // trainTCK - Train the TCK
     //
@@ -86,6 +86,7 @@ object trainTCK{
       val c: Int = (floor((i-1)/G) + 2).toInt
       res = res :+ GMM_MAP_EM.GMM_MAP_EM(x,c,minN,minV,V,minT,maxT,I,missing)
     }
+    //println(GMM_MAP_EM.GMM_MAP_EM(x,(floor((5-1)/G) + 2).toInt,minN,minV,V,minT,maxT,I,missing)._1.deep.mkString("\n"))
     (res, C, G)
   }
 }

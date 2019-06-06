@@ -1,7 +1,7 @@
-package com.TCK.Models
+package com.tck.models
 
 import breeze.linalg._
-import com.TCK.Ultils.Ultils._
+import com.tck.utils.Utils._
 
 object GMMposterior{
 

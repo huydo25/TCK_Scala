@@ -1,9 +1,9 @@
-package com.TCK.Models
+package com.tck.models
 
 import breeze.linalg._
 import breeze.numerics.floor
-import com.TCK.Ultils.Ultils._
-import com.TCK.Models.GMMposterior._
+import com.tck.utils.Utils._
+import com.tck.models.GMMposterior._
 
 object TCK {
   def TCK( gmmParameter : List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])] ,

@@ -1,8 +1,8 @@
-package com.TCK.main
+package com.tck.main
 
 import scala.io.Source
-import com.TCK.Models.trainTCK._
-import com.TCK.Models.TCK._
+import com.tck.models.trainTCK._
+import com.tck.models.TCK._
 
 object Main{
 
@@ -39,6 +39,7 @@ object Main{
     for (i <- 100 until  Y.length  ){
       Y(i) += 1
     }
+
     // Reshape xte data into MTS
     var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
     for(i <- 0 until xte.length -1 ){
@@ -52,7 +53,7 @@ object Main{
       }
     }
     val Yte =Y
-//    print(Xte(0).deep.mkString("\n"))
+    //print(Yte.deep.mkString(" "))
     var gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
     var C: Int = 0
     var G: Int = 0
@@ -61,7 +62,8 @@ object Main{
     gmmParameter = temp_r._1
     C = temp_r._2
     G = temp_r._3
-
+//    println(C,G)
+//    println(gmmParameter(0)._1.deep.mkString("\n"))
 //    (gmmParameter, C, G) = trainTCK(X)
 
     // Compute in-sample kernel matrix
@@ -69,30 +71,35 @@ object Main{
 
     // % Compute similarity between Xte and the training points
     var Kte = TCK(gmmParameter,C,G,0,Xte);
-//    println(Kte.deep.mkString("\n"))
+    //println(Kte.deep.mkString("\n"))
     // 1NN -classifier
     val Nte = Yte.length
+    //println(Nte)
     var I : Array[Int] = Array.ofDim(Kte(0).length)
     for (i <- 0 until Kte(0).length){
       val temp = Kte.map(_(i))
 //      println(temp.max)
       I(i) = temp.indexOf(temp.max)
     }
-    println(I.deep.mkString(" "))
-//    var predY : Array[Double] = Array.ofDim(I.length)
-//    for (i <- I){
-//      predY(i) = Y(i)
-//    }
-//    var sum : Int = 0
-//    for (i <- 0 until Yte.length ){
-//      if (predY(i) == Yte(i)){
-//        sum += 1
-//      }
-//    }
-//    var accuracy : Double = sum / Nte
-//
-//
-//    println("Done!!")
+    //println(I.deep.mkString(" "))
+    var predY : Array[Int] = Array.fill(I.length)(1)
+    for (i <- I){
+      predY(i) = Y(i)
+      //println(i, Y(i))
+      //println(i, predY(i))
+      //println()
+    }
+    //println(predY.deep.mkString(" "))
+    var sum : Int = 0
+    for (i <- 0 until Yte.length ){
+      if (predY(i) == Yte(i)){
+        sum  = sum + 1
+      }
+    }
+    val accuracy : Double = sum.toDouble / Nte.toDouble * 100
+    println()
+    println(accuracy)
+    println("Done!!")
   }
 
 

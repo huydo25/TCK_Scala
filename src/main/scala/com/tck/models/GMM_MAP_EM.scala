@@ -1,11 +1,11 @@
-package com.TCK.Models
+package com.tck.models
 
 import breeze.linalg.{Axis, DenseMatrix, DenseVector, det, diag, inv, sum}
 
 import scala.math._
 import breeze.numerics.{pow}
-import com.TCK.Models.GMMposterior._
-import com.TCK.Ultils.Ultils._
+import com.tck.models.GMMposterior._
+import com.tck.utils.Utils._
 
 import scala.util.Random
 
@@ -90,6 +90,7 @@ object  GMM_MAP_EM{
         }
       }
     }
+    //println(sX.deep.mkString("\n"))
     // initialize model parameters
     var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
     var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0.0) // cluster means         (sT x sV x C)
@@ -202,13 +203,13 @@ object  GMM_MAP_EM{
         else{
           // start
           var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sT, sV)
-          for (i <- 0 until C){
+          for (c <- 0 until C){
             var temp: Double = 0
             for (j <- 0 until sN){
               for (k <- 0 until sT) {
                 for (l <- 0 until sV){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
+                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(c), s2(l)(c))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
@@ -233,7 +234,7 @@ object  GMM_MAP_EM{
               }
             }
             for (j <- 0 until sN){
-              Q(j)(i) = prod_distrc_c(j) * theta(i)
+              Q(j)(c) = prod_distrc_c(j) * theta(c)
             }
             //end
           }
@@ -284,6 +285,7 @@ object  GMM_MAP_EM{
         var a = nanmean2D(temp.map(_(i)), 1)
         mu_0(i) = a
       }
+      // println(mu_0.deep.mkString("\n"))
       // reshape 3D array to 2D
       var s_0: Array[Double] = Array.fill(sV)(1) // prior std over variables (sV x 1)
       var tempX : Array[Array[Double]] = Array.ofDim(sV, sN*sT)
@@ -296,7 +298,7 @@ object  GMM_MAP_EM{
         //println(temp.deep.mkString("\n"))
         tempX(i) = temp
       }
-      // println(tempX.deep.mkString("\n"))
+      //println(tempX.deep.mkString("\n"))
       //println("\n")
       tempX = tempX.transpose
       s_0 = nanstd2D(tempX,0,0)
@@ -306,9 +308,9 @@ object  GMM_MAP_EM{
 
       val T1 : Array[Array[Int]] = Array.fill(sT)(1 to sT toArray).transpose
       val T2 : Array[Array[Int]] = Array.fill(sT)(1 to sT toArray)
-//      println(T1.length, T1(0).length)
-//      println(T2.length, T2(0).length)
-//      println(s_0.length)
+      //println(T1.length, T1(0).length)
+      //println(T2.length, T2(0).length)
+      //println(s_0.length)
       var  r: Array[Array[Double]] = Array()
       for (v <- 0 until sV){
         r = Array.ofDim(T1.length,T1.length)
@@ -329,33 +331,38 @@ object  GMM_MAP_EM{
         }
         invS_0(v) = r
       }
-
+      //println(invS_0.deep.mkString("\n"))
       // initialize model parameters
-      // var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-      // var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
-      // var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
-      // var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+       theta = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+       mu = Array.fill(sT, sV, C)(0.0)             // cluster means         (sT x sV x C)
+       s2 = Array.fill(sV, C)(0)                   // cluster variances     (sV x C)
+       Q  = Array.fill(sN, C)(0)                   // cluster assignments   (sN x C)
 
       for (i <- 0 until I){
         // initialization: random clusters assignment
-        if (i == 1){
+        if (i == 0){
           val cluster: Array[Int] = Array.fill(sN)(Random.nextInt(C))
           val temp: Array[Int] = (1 to C).toArray
           Q.indices.map(i => Q(i).indices.map(j => if (cluster(i) == temp(j)) Q (i)(j) = 1 else Q (i)(j) = 0))
+          // println(Q.deep.mkString("\n"))
         }
         // update clusters assignment
         else{
           // start
           var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sT, sV)
-//          println(sX.length,sX(0).length, sX(0)(0).length)
-//          println(sN, sT, sV)
-          for (i <- 0 until C){
+          //println(sX.length,sX(0).length, sX(0)(0).length)
+          //println(sN, sT, sV)
+          for (c <- 0 until C){
             var temp: Double = 0
             for (j <- 0 until sN){
               for (k <- 0 until sT) {
                 for (l <- 0 until sV){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
+                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(c), s2(l)(c))
+                  //println(sX.length, sX(0).length, sX(0)(0).length)
+                  //println(mu.length, mu(0).length, mu(0)(0).length)
+                  //println(s2.length, s2(0).length)
+                  //println(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
                   if (temp < normpdf(3)){
                     temp = normpdf(3)
                   }
@@ -363,12 +370,14 @@ object  GMM_MAP_EM{
                 }
               }
             }
+            //println(distr_c.deep.mkString("\n"))
+
             //reshape distribution vector
             var temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
             for (l <- 0 until sN){
               for (j <- 0 until sT){
                 for (k <- 0 until sV){
-//                  println(temp1(0).length, k*sT+j)
+                  //println(temp1(0).length, k*sT+j)
                   temp1(l)(k*sT+j) = distr_c(l)(j)(k)
                 }
               }
@@ -381,7 +390,7 @@ object  GMM_MAP_EM{
               }
             }
             for (j <- 0 until sN){
-              Q(j)(i) = prod_distrc_c(j) * theta(i)
+              Q(j)(c) = prod_distrc_c(j) * theta(c)
             }
             //end
           }
@@ -414,6 +423,9 @@ object  GMM_MAP_EM{
     } else {
       sys.error("The value of the variable missing is not 0 or 1")
     }
+    //println(Q.deep.mkString("\n"))
+    //println(mu.deep.mkString("\n"))
+    //println(s2.deep.mkString("\n"))
     (Q , mu, s2, theta, dim_idx, time_idx)
   }
 
