@@ -71,7 +71,8 @@ object Main{
 
     // % Compute similarity between Xte and the training points
     var Kte = TCK(gmmParameter,C,G,0,Xte);
-    //println(Kte.deep.mkString("\n"))
+//    println(Kte.length, Kte(0).length)
+//    println(Kte.deep.mkString("\n"))
     // 1NN -classifier
     val Nte = Yte.length
     //println(Nte)

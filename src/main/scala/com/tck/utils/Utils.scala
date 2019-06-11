@@ -20,7 +20,7 @@ object Utils{
     binary_vector
   }
 
-  def normpdf(x: Double, mu: Double = 0, sigma: Double =1 ): Double ={
+  def normpdf(x: Double, mu: Double = 0.0, sigma: Double = 1.0 ): Double ={
     //  NORMPDF Normal probability density function (pdf).
     //    Y = NORMPDF(X,MU,SIGMA) returns the pdf of the normal distribution with
     //    mean MU and standard deviation SIGMA, evaluated at the values in X.
