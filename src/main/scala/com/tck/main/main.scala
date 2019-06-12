@@ -1,5 +1,7 @@
 package com.tck.main
 
+import breeze.linalg.{Axis, DenseMatrix, sum}
+
 import scala.io.Source
 import com.tck.models.trainTCK._
 import com.tck.models.TCK._
@@ -40,6 +42,7 @@ object Main{
       Y(i) += 1
     }
 
+    //println(sum((DenseMatrix(X.map(_.map(_(0))):_*) - DenseMatrix(Array.fill(200)(X.map(_.map(_(0))).map(_(0)).slice(0,50)):_*)).map(x => x*x), Axis._1).t)
     // Reshape xte data into MTS
     var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
     for(i <- 0 until xte.length -1 ){
