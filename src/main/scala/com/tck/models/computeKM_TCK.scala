@@ -5,7 +5,7 @@ import breeze.numerics.floor
 import com.tck.utils.Utils._
 import com.tck.models.GMMposterior._
 
-object TCK {
+object computeKM_TCK {
   def TCK( gmmParameter : List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])] ,
            C: Int, G: Int, marking: Int = 0 , xte: Array[Array[Array[Double]]] = Array()): Array[Array[Double]] ={
   // function [ K ] = TCK(GMM, C, G, Xte)

@@ -4,7 +4,7 @@ import breeze.linalg.{Axis, DenseMatrix, sum}
 
 import scala.io.Source
 import com.tck.models.trainTCK._
-import com.tck.models.TCK._
+import com.tck.models.computeKM_TCK._
 
 object Main{
 
