@@ -1,6 +1,7 @@
 package com.tck.models
 
 import breeze.linalg._
+import breeze.numerics.sqrt
 import com.tck.utils.Utils._
 
 object GMMposterior{
@@ -25,9 +26,10 @@ object GMMposterior{
 
     //initialize variables
     val N = x.length
-    var Q : Array[Array[Double]]= Array.fill(N,C)(0)
+    var Q : Array[Array[Double]]= Array.fill(N,C)(0.0)
     val sV = dim_idx.length
     val sT = time_idx.length
+    //println(N,sV,sT)
     //sample of X
     val sX: Array[Array[Array[Double]]] = Array.ofDim(N,sT,sV)
     for (i <- 0 until N){
@@ -37,6 +39,7 @@ object GMMposterior{
         }
       }
     }
+    //println(sX.deep.mkString("\n"))
     //end sample
     if (missing == 1){
       // handle missing data
@@ -101,7 +104,7 @@ object GMMposterior{
           for (k <- 0 until sT) {
             for (l <- 0 until sV){
               // need to update in term of dimension array
-              temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
+              temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), sqrt(s2(l)(i)))
               if (temp < normpdf(3)) {
                 temp = normpdf(3)
               }
@@ -135,7 +138,7 @@ object GMMposterior{
       Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sum(i)(j)))
 
     } else
-      sys.error("The value of the variable missing is not 0 or 1")
+      print("The value of the variable missing is not 0 or 1")
     Q
   }
 

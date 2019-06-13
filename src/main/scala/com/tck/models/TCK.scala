@@ -37,7 +37,8 @@ object TCK {
       missing = 0
       //println("The dataset does not contain missing data\n\n")
     }
-    var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,xte.length)(0)
+
+    var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,xte.length)(0.0)
     var result: DenseMatrix[Double] = DenseMatrix.zeros(gmmParameter(0)._1.length,xte.length)
     for (i <- 0 until G*(C-1)){
       val c = floor((i-1)/G) +2

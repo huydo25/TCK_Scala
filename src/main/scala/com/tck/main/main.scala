@@ -73,37 +73,35 @@ object Main{
     var K = TCK(gmmParameter,C,G,1)
 
     // % Compute similarity between Xte and the training points
-    var Kte = TCK(gmmParameter,C,G,0,Xte);
-//    println(Kte.length, Kte(0).length)
-//    println(Kte.deep.mkString("\n"))
-    // 1NN -classifier
-    val Nte = Yte.length
-    //println(Nte)
-    var I : Array[Int] = Array.ofDim(Kte(0).length)
-    for (i <- 0 until Kte(0).length){
-      val temp = Kte.map(_(i))
-//      println(temp.max)
-      I(i) = temp.indexOf(temp.max)
-    }
-    //println(I.deep.mkString(" "))
-    var predY : Array[Int] = Array.fill(I.length)(1)
-    for (i <- I){
-      predY(i) = Y(i)
-      //println(i, Y(i))
-      //println(i, predY(i))
-      //println()
-    }
-    //println(predY.deep.mkString(" "))
-    var sum : Int = 0
-    for (i <- 0 until Yte.length ){
-      if (predY(i) == Yte(i)){
-        sum  = sum + 1
-      }
-    }
-    val accuracy : Double = sum.toDouble / Nte.toDouble * 100
-    println()
-    println(accuracy)
-    println("Done!!")
+    var Kte = TCK(gmmParameter,C,G,0,Xte)
+    println(Kte.deep.mkString("\n"))
+////    println(Kte.length, Kte(0).length)
+////    println(Kte.deep.mkString("\n"))
+//    // 1NN -classifier
+//    val Nte = Yte.length
+//    //println(Nte)
+//    var I : Array[Int] = Array.ofDim(Kte(0).length)
+//    for (i <- 0 until Kte(0).length){
+//      val temp = Kte.map(_(i))
+////      println(temp.max)
+//      I(i) = temp.indexOf(temp.max)
+//    }
+//    //println(I.deep.mkString(" "))
+//    var predY : Array[Int] = Array.fill(I.length)(1)
+//    for (i <- I){
+//      predY(i) = Y(i)
+//    }
+//    //println(predY.deep.mkString(" "))
+//    var sum : Int = 0
+//    for (i <- 0 until Yte.length ){
+//      if (predY(i) == Yte(i)){
+//        sum  = sum + 1
+//      }
+//    }
+//    val accuracy : Double = sum.toDouble / Nte.toDouble * 100
+//    println()
+//    println(accuracy)
+//    println("Done!!")
   }
 
 

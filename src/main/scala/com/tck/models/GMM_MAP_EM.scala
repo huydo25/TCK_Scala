@@ -66,24 +66,24 @@ object  GMM_MAP_EM{
     //Randomly subsample dimensions, time intervals and samples
     var sN: Int = 0
     if(N > 100){
-      //sN = math.round(minN*N).toInt + Random.nextInt(N - math.round(minN*N).toInt +1)
+//      sN = math.round(minN*N).toInt + Random.nextInt(N - math.round(minN*N).toInt +1)
       sN = 180
     } else {
       sN = math.round(0.9*N).toInt
     }
     var sub_idx: Array[Int] = Array.ofDim(sN)
-    //sub_idx = Random.shuffle(0 to N-1).take(sN).sortWith(_<_).toArray
-    sub_idx = (0 to sN-1).toArray
+//    sub_idx = Random.shuffle(0 to N-1).take(sN).sortWith(_<_).toArray
+    sub_idx = (0 until sN).toArray
 
     val sV =  minV + Random.nextInt(maxV - minV +1)
     val dim_idx : Array[Int] = Random.shuffle(0 to V-1).take(sV).sortWith(_<_).toArray//generate sV (sorted) integers between 1 and V
 
     val t1 =  1 + Random.nextInt(T-minT+1)
     val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1) - 1
-    //val sT = t2 - t1 +1
+//    val sT = t2 - t1 +1
     val sT = 20
-    //val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
-    val time_idx = (11 to 30).toArray
+//    val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
+    val time_idx = (10 to 29).toArray
 
     val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
     for (i <- 0 until sN){
@@ -93,7 +93,7 @@ object  GMM_MAP_EM{
         }
       }
     }
-
+    //println(sX.deep.mkString("\n"))
     // initialize model parameters
     var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
     var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0.0) // cluster means         (sT x sV x C)
@@ -180,10 +180,10 @@ object  GMM_MAP_EM{
       }
 
       // initialize model parameters
-      //  var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-      //  var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
-      //  var s2 : Array[Array[Double]] = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
-      //  var Q : Array[Array[Double]] = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+        theta = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+        mu = Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
+        s2  = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
+        Q = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
 
       for (i <- 0 until x.length){
         for (j <- 0 until x(i).length){
@@ -331,15 +331,16 @@ object  GMM_MAP_EM{
       // no errors  until there
 
       // initialize model parameters
-       theta = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
+       theta = Array.fill(C)(1.0/C)                  // cluster priors        (1 x C)
        mu = Array.fill(sT, sV, C)(0.0)             // cluster means         (sT x sV x C)
-       s2 = Array.fill(sV, C)(0)                   // cluster variances     (sV x C)
-       Q  = Array.fill(sN, C)(0)                   // cluster assignments   (sN x C)
+       s2 = Array.fill(sV, C)(0.0)                   // cluster variances     (sV x C)
+       Q  = Array.fill(sN, C)(0.0)                   // cluster assignments   (sN x C)
 
       for (i <- 0 until I){
         // initialization: random clusters assignment
         if (i == 0){
-          val cluster: Array[Int] = Array.fill(sN)(Random.nextInt(C))
+          //val cluster: Array[Int] = Array.fill(sN)(Random.nextInt(C))
+          val cluster : Array[Int] = Array(3,8,2,8,3,1,9,7,10,10,6,10,5,9,1,2,8,4,4,7,1,4,1,7,6,1,5,5,7,3,1,5,8,7,10,3,3,3,9,8,9,8,7,5,6,10,10,4,2,5,6,1,9,9,5,3,8,7,5,2,8,9,2,10,1,5,1,3,8,7,3,4,1,1,8,4,6,10,7,5,7,7,3,9,6,5,8,6,3,1,6,7,6,6,5,4,5,8,10,3,8,2,1,5,6,3,2,7,4,6,7,6,6,8,7,4,9,7,6,1,9,2,9,4,5,8,2,7,10,7,1,7,3,7,4,6,3,10,4,1,1,7,10,4,8,3,2,6,4,10,3,6,6,7,6,3,2,8,1,9,5,9,10,5,1,8,7,6,6,4,8,4,9,4,8,9,1,5,10,5)
           val temp: Array[Int] = (1 to C).toArray
           Q.indices.map(i => Q(i).indices.map(j => if (cluster(i) == temp(j)) Q (i)(j) = 1 else Q (i)(j) = 0))
           //println(Q.deep.mkString("\n"))
@@ -356,7 +357,7 @@ object  GMM_MAP_EM{
                 for (l <- 0 until sV){
                   var temp: Double = 0
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(c), s2(l)(c))
+                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(c), sqrt(s2(l)(c)))
                   //if (temp > 1){
                   //  print(temp)
                   //  print(" ")
@@ -367,24 +368,21 @@ object  GMM_MAP_EM{
                     temp = normpdf(3)
                   }
                   distr_c(j)(k)(l) = temp
-//                  print(distr_c(j)(k)(l))
-//                  print(" ")
                 }
               }
-//              println()
             }
-            //println(distr_c.deep.mkString("\n"))
 
             //reshape distribution vector
             var temp1: Array[Array[Double]] = Array.ofDim(sN, sV*sT)
             for (l <- 0 until sN){
-              for (j <- 0 until sT){
-                for (k <- 0 until sV){
+              for (k <- 0 until sV){
+                for (j <- 0 until sT){
                   //println(temp1(0).length, k*sT+j)
                   temp1(l)(k*sT+j) = distr_c(l)(j)(k)
                 }
               }
             }
+            //println(temp1.deep.mkString("\n"))
             //distr_c.indices.map(i => distr_c(i).indices.map(j =>  distr_c.indices.map(k => temp1(i)(k*sT+j) = distr_c(i)(j)(k))))
             // product of distribution function
             var prod_distrc_c : Array[Double] = Array.fill(sN)(1)
@@ -398,42 +396,50 @@ object  GMM_MAP_EM{
             }
             //end
           }
-          val sum = Array.fill(C)(Q.map(_.sum)).transpose
-          Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sum(i)(j)))
+//          println()
+//          println(distr_c.deep.mkString("\n"))
+//          println()
+          val sumtQ = Array.fill(C)(Q.map(_.sum)).transpose
+          Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sumtQ(i)(j)))
+          //println(Q.deep.mkString("\n"))
           //end
         }
         // update mu, s2 and theta
         for (c <- 0 until C){
           val sumQ = Q.map(_(c)).sum
+
           theta(c) = sumQ/sN
+          //println(theta.deep.mkString(" "))
           for (v <- 0 until sV ){
             val var2 = sT * sumQ
             val temp_var2 = (DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*)).map(x => x*x)
             val var1 = DenseVector(Q.map(_(c)):_*).t dot sum(temp_var2, Axis._1).t
+            //println((DenseMatrix(sX.map(_.map(_(v))):_*)))
             s2(v)(c) = (n0*s2_0(v) + var1) / (n0 + var2)
 
             val A =  DenseMatrix(invS_0(v):_*) + (sumQ/s2(v)(c))* DenseMatrix.eye[Double](sT)
             val b =  DenseMatrix(invS_0(v):_*) * DenseMatrix(mu_0.map(_(v)):_*) + DenseMatrix(sX.map(_.map(_(v))):_*).t * DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)
             val temp_r : Array[Double] = (A \ b).toArray
-            mu.map(_.map(_(c))).map(_(v)).indices.map(x => mu(x)(v)(c) = temp_r(x) )
+//            println(temp_r.deep.mkString(" "))
+//            println()
+            for (t <- 0 until sT){
+              mu(t)(v)(c) = temp_r(t)
+            }
+            //mu.map(_.map(_(c))).map(_(v)).indices.map(x => mu(x)(v)(c) = temp_r(x))
           }
         }
-//        if (i == 0 ){
-//          println(mu.deep.mkString("\n"))
-//        }
+//        println()
+//        println(s2.deep.mkString("\n"))
+//        println()
       } // end for i=1:I
-//      println()
-//      println(theta.deep.mkString(" "))
-//      println()
+
       // compute assignments for all data
       Q  = GMMposterior.GMM_posterior(x, C, mu, s2, theta, dim_idx, time_idx, missing)
+      // DONE FIXBUGS SINCE THERE
 
     } else {
-      sys.error("The value of the variable missing is not 0 or 1")
+      print("The value of the variable missing is not 0 or 1")
     }
-    //println(Q.deep.mkString("\n"))
-    //println(mu.deep.mkString("\n"))
-    //println(s2.deep.mkString("\n"))
     (Q , mu, s2, theta, dim_idx, time_idx)
   }
 
