@@ -6,10 +6,10 @@ import com.tck.models.GMM_MAP_EM._
 
 object trainTCK{
   def trainTCK(x: Array[Array[Array[Double]]],
-               C: Int = 10, minN: Double = 0.8,
+               C: Int = 40, minN: Double = 0.8,
                minV: Int = 2, maxV: Int = 2,
                minT : Int =6, maxT: Int = 25,
-               I: Int = 20,  G: Int = 5): (List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])], Int, Int) = {
+               I: Int = 20,  G: Int = 30): (List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])], Int, Int) = {
 
     // trainTCK - Train the TCK
     //
@@ -51,8 +51,6 @@ object trainTCK{
     } else{
       val minV = 2
     }
-//    println(maxV)
-//    println(V)
     assert(minN > 0 && minN <= 1, "The minimum percentage of subsample must be in (0,1]" )
     assert(minV >= 1 && minV <= V, "The minimum number of variables must be in [1,V]")
     assert(maxV >= 1 && maxV <= V, "The maximum number of variables must be in [1,V]")
@@ -83,10 +81,9 @@ object trainTCK{
     var res : List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
 
     for (i <- 0 until (G*(C-1))){
-      val c: Int = (floor((i-1)/G) + 2).toInt
+      val c: Int = (floor((i)/G) + 2).toInt
       res = res :+ GMM_MAP_EM.GMM_MAP_EM(x,c,minN,minV,V,minT,maxT,I,missing)
     }
-    //println(GMM_MAP_EM.GMM_MAP_EM(x,(floor((5-1)/G) + 2).toInt,minN,minV,V,minT,maxT,I,missing)._1.deep.mkString("\n"))
     (res, C, G)
   }
 }

@@ -19,8 +19,6 @@ object Main{
     val x = readCSV(resourcesPath.getPath)
     val resourcesPath1 = getClass.getResource("/xte_VAR.csv")
     val xte = readCSV(resourcesPath1.getPath)
-    //val x_new = DenseMatrix(x:_*)
-    // println(x.length, x(0).length)
 
     // Reshape raw data into MTS
     var X : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
@@ -28,11 +26,9 @@ object Main{
       for (j <- 0 until x(i).length){
         if ( j < (x(i).length/2)){
           X(i)(j)(0) = x(i)(j)
-          //println(j, x(i)(j))
         }
         else{
           X(i)(j-x(i).length/2)(1) = x(i)(j)
-          //println(j-(x(i).length/2),x(i)(j))
         }
       }
     }
@@ -45,7 +41,7 @@ object Main{
     //println(sum((DenseMatrix(X.map(_.map(_(0))):_*) - DenseMatrix(Array.fill(200)(X.map(_.map(_(0))).map(_(0)).slice(0,50)):_*)).map(x => x*x), Axis._1).t)
     // Reshape xte data into MTS
     var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
-    for(i <- 0 until xte.length -1 ){
+    for(i <- 0 until xte.length  ){
       for (j <- 0 until xte(i).length){
         if ( j < (xte(i).length/2)){
           Xte(i)(j)(0) = xte(i)(j)
@@ -56,7 +52,7 @@ object Main{
       }
     }
     val Yte =Y
-    //print(Yte.deep.mkString(" "))
+
     var gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
     var C: Int = 0
     var G: Int = 0
@@ -65,43 +61,35 @@ object Main{
     gmmParameter = temp_r._1
     C = temp_r._2
     G = temp_r._3
-//    println(C,G)
-//    println(gmmParameter(0)._1.deep.mkString("\n"))
-//    (gmmParameter, C, G) = trainTCK(X)
 
     // Compute in-sample kernel matrix
     var K = TCK(gmmParameter,C,G,1)
-
-    // % Compute similarity between Xte and the training points
+    println("Done training TCK")
+    // Compute similarity between Xte and the training points
     var Kte = TCK(gmmParameter,C,G,0,Xte)
-    println(Kte.deep.mkString("\n"))
-////    println(Kte.length, Kte(0).length)
-////    println(Kte.deep.mkString("\n"))
-//    // 1NN -classifier
-//    val Nte = Yte.length
-//    //println(Nte)
-//    var I : Array[Int] = Array.ofDim(Kte(0).length)
-//    for (i <- 0 until Kte(0).length){
-//      val temp = Kte.map(_(i))
-////      println(temp.max)
-//      I(i) = temp.indexOf(temp.max)
-//    }
-//    //println(I.deep.mkString(" "))
-//    var predY : Array[Int] = Array.fill(I.length)(1)
-//    for (i <- I){
-//      predY(i) = Y(i)
-//    }
-//    //println(predY.deep.mkString(" "))
-//    var sum : Int = 0
-//    for (i <- 0 until Yte.length ){
-//      if (predY(i) == Yte(i)){
-//        sum  = sum + 1
-//      }
-//    }
-//    val accuracy : Double = sum.toDouble / Nte.toDouble * 100
-//    println()
-//    println(accuracy)
-//    println("Done!!")
+
+    // 1NN -classifier
+    val Nte = Yte.length
+    var I : Array[Int] = Array.ofDim(Kte(0).length)
+    for (i <- 0 until Kte(0).length){
+      val temp = Kte.map(_(i))
+      I(i) = temp.indexOf(temp.max)
+    }
+    var predY : Array[Int] = Array.fill(I.length)(1)
+    I.indices.map(i => predY(i) = Y(I(i)))
+
+    //println(predY.deep.mkString(" "))
+    var sum : Int = 0
+    for (i <- 0 until Yte.length ){
+      if (predY(i) == Yte(i)){
+        sum  = sum + 1
+      }
+    }
+    val accuracy : Double = sum.toDouble / Nte.toDouble * 100.0
+    println()
+    print("Cluster accuracy: ")
+    println(accuracy)
+    println("Done!!")
   }
 
 

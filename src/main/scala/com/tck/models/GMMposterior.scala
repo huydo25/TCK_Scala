@@ -1,7 +1,6 @@
 package com.tck.models
 
-import breeze.linalg._
-import breeze.numerics.sqrt
+import breeze.numerics._
 import com.tck.utils.Utils._
 
 object GMMposterior{
@@ -16,7 +15,7 @@ object GMMposterior{
     //      C: number of mixture components (optional)
     //      mu: cluster means over time and variables (V x T)
     //      s2: cluster stds over variables (sV x 1)
-    //      theta: cluster priors \
+    //      theta: cluster priors
     //      dim_idx: subset of variables to be used in the clustering
     //      time_idx: subset of time intervals to be used in the clustering
     //      missing: binary indicator. 1 if there is missing data and 0 if not
@@ -26,7 +25,7 @@ object GMMposterior{
 
     //initialize variables
     val N = x.length
-    var Q : Array[Array[Double]]= Array.fill(N,C)(0.0)
+    val Q : Array[Array[Double]]= Array.fill(N,C)(0.0)
     val sV = dim_idx.length
     val sT = time_idx.length
     //println(N,sV,sT)
@@ -63,7 +62,7 @@ object GMMposterior{
           for (k <- 0 until sT) {
             for (l <- 0 until sV){
               // need to update in term of dimension array
-              temp = normpdf(sX(j)(k)(l), mu(k)(l)(i), s2(l)(i))
+              temp = pow(normpdf(sX(j)(k)(l), mu(k)(l)(i), sqrt(s2(l)(i))), R(i)(j)(k))
               if (temp < normpdf(3)) {
                 temp = normpdf(3)
               }

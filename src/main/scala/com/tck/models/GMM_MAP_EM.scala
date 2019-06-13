@@ -57,33 +57,33 @@ object  GMM_MAP_EM{
     maxT_new = math.min(math.floor(0.8*T), maxT)
 
     // Hyperparameters for mean prior (a0, b0) and the std dev prior (n0) of the mixture components
-//    val a0 : Double = ( 1.0 - 0.001 ) * random + 0.001
-//    val b0 : Double = ( 0.2 - 0.005 ) * random + 0.005
-//    val n0 : Double = ( 0.2 - 0.001 ) * random + 0.001
-    val a0 = 0.8409
-    val b0 = 0.0546
-    val n0 = 0.1630
+    val a0 : Double = ( 1.0 - 0.001 ) * random + 0.001
+    val b0 : Double = ( 0.2 - 0.005 ) * random + 0.005
+    val n0 : Double = ( 0.2 - 0.001 ) * random + 0.001
+    //val a0 = 0.8409
+    //val b0 = 0.0546  // used for debugs
+    //val n0 = 0.1630
     //Randomly subsample dimensions, time intervals and samples
     var sN: Int = 0
     if(N > 100){
-//      sN = math.round(minN*N).toInt + Random.nextInt(N - math.round(minN*N).toInt +1)
-      sN = 180
+      sN = math.round(minN*N).toInt + Random.nextInt(N - math.round(minN*N).toInt +1)
+      //sN = 180
     } else {
       sN = math.round(0.9*N).toInt
     }
     var sub_idx: Array[Int] = Array.ofDim(sN)
-//    sub_idx = Random.shuffle(0 to N-1).take(sN).sortWith(_<_).toArray
-    sub_idx = (0 until sN).toArray
+    sub_idx = Random.shuffle(0 to N-1).take(sN).sortWith(_<_).toArray
+    //sub_idx = (0 until sN).toArray
 
     val sV =  minV + Random.nextInt(maxV - minV +1)
     val dim_idx : Array[Int] = Random.shuffle(0 to V-1).take(sV).sortWith(_<_).toArray//generate sV (sorted) integers between 1 and V
 
     val t1 =  1 + Random.nextInt(T-minT+1)
     val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1) - 1
-//    val sT = t2 - t1 +1
-    val sT = 20
-//    val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
-    val time_idx = (10 to 29).toArray
+    val sT = t2 - t1 +1
+    //val sT = 20
+    val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
+    //val time_idx = (10 to 29).toArray
 
     val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
     for (i <- 0 until sN){
@@ -93,10 +93,9 @@ object  GMM_MAP_EM{
         }
       }
     }
-    //println(sX.deep.mkString("\n"))
     // initialize model parameters
-    var theta : Array[Double] = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-    var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0.0) // cluster means         (sT x sV x C)
+    var theta : Array[Double] = Array.fill(C)(1/C)                    // cluster priors        (1 x C)
+    var mu : Array[Array[Array[Double]]]= Array.fill(sT, sV, C)(0.0)  // cluster means         (sT x sV x C)
     var s2 : Array[Array[Double]] = Array.fill(sV, C)(0.0)            // cluster variances     (sV x C)
     var Q : Array[Array[Double]] = Array.fill(sN, C)(0.0)             // cluster assignments   (sN x C)
 
@@ -131,7 +130,6 @@ object  GMM_MAP_EM{
       }
       // mean over the array
       for (i <- 0 until temp(0).length){
-        //      println(temp.length, temp(0).length, temp(0)(0).length)
         var a = nanmean2D(temp.map(_(i)), 1)
         mu_0(i) = a
       }
@@ -144,11 +142,9 @@ object  GMM_MAP_EM{
         for (j <- 0 until sX(0).length ){
           temp = temp ++ sX.map(_(j)).map(_(i))
         }
-        //println(temp.deep.mkString("\n"))
         tempX(i) = temp
       }
-     // println(tempX.deep.mkString("\n"))
-      //println("\n")
+
       tempX = tempX.transpose
       s_0 = nanstd2D(tempX,0,0)
       var s2_0 = s_0.map(x => x*x)
@@ -166,7 +162,6 @@ object  GMM_MAP_EM{
             r(i)(j) = s_0(v) * b0 * math.exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
           }
         }
-        //S_0(v) = r
         // if matrix is inverted
         var t = DenseMatrix(r:_*)
         if ( det(t) != 0 ){  // check if the matrix can be inverted
@@ -180,10 +175,10 @@ object  GMM_MAP_EM{
       }
 
       // initialize model parameters
-        theta = Array.fill(C)(1/C)                  // cluster priors        (1 x C)
-        mu = Array.fill(sT, sV, C)(0) // cluster means         (sT x sV x C)
-        s2  = Array.fill(sV, C)(0)            // cluster variances     (sV x C)
-        Q = Array.fill(sN, C)(0)             // cluster assignments   (sN x C)
+        theta = Array.fill(C)(1/C)             // cluster priors        (1 x C)
+        mu = Array.fill(sT, sV, C)(0)          // cluster means         (sT x sV x C)
+        s2  = Array.fill(sV, C)(0)             // cluster variances     (sV x C)
+        Q = Array.fill(sN, C)(0)               // cluster assignments   (sN x C)
 
       for (i <- 0 until x.length){
         for (j <- 0 until x(i).length){
@@ -212,7 +207,7 @@ object  GMM_MAP_EM{
               for (k <- 0 until sT) {
                 for (l <- 0 until sV){
                   // need to update in term of dimension array
-                  temp = normpdf(sX(j)(k)(l), mu(k)(l)(c), s2(l)(c))
+                  temp = pow(normpdf(sX(j)(k)(l), mu(k)(l)(i), sqrt(s2(l)(i))), R(i)(j)(k))
                   if (temp < normpdf(3)) {
                     temp = normpdf(3)
                   }
@@ -251,7 +246,7 @@ object  GMM_MAP_EM{
           theta(c) = sumQ/sN
           for (v <- 0 until sV ){
             val var2 = DenseVector(R.map(_.map(_(v)).sum):_*).t * DenseVector(Q.map(_(c)):_*) // be careful with transpose
-            val temp_var2 = DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*).map(x => x*x)
+            val temp_var2 = (DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*)).map(x => x*x)
             val var1 = DenseVector(Q.map(_(c)):_*).t dot
                                           sum(DenseMatrix(R.map(_.map(_(v))):_*) :* temp_var2, Axis._1).t
 
@@ -315,14 +310,12 @@ object  GMM_MAP_EM{
             r(i)(j) = s_0(v) * b0 * exp(-a0 * math.pow((T1(i)(j) - T2(i)(j)),2))
           }
         }
-        //S_0(v) = r
         // if matrix is inverted
         var t = DenseMatrix(r:_*)
         if ( det(t) == 0 ){  // check if the matrix can be inverted
           t = t + 0.1*t(1,1)* DenseMatrix.eye[Double](T1.length)  // add a small number to the diagonal if S_0 is not invertible
         }
         val inv_t = inv(t)
-        //println(inv_t.toString(20,Int.MaxValue))
         for (i <- 0 until inv_t.rows ){
           r(i) = inv_t(::,i).toArray
         }
@@ -332,25 +325,21 @@ object  GMM_MAP_EM{
 
       // initialize model parameters
        theta = Array.fill(C)(1.0/C)                  // cluster priors        (1 x C)
-       mu = Array.fill(sT, sV, C)(0.0)             // cluster means         (sT x sV x C)
+       mu = Array.fill(sT, sV, C)(0.0)               // cluster means         (sT x sV x C)
        s2 = Array.fill(sV, C)(0.0)                   // cluster variances     (sV x C)
        Q  = Array.fill(sN, C)(0.0)                   // cluster assignments   (sN x C)
 
       for (i <- 0 until I){
         // initialization: random clusters assignment
         if (i == 0){
-          //val cluster: Array[Int] = Array.fill(sN)(Random.nextInt(C))
-          val cluster : Array[Int] = Array(3,8,2,8,3,1,9,7,10,10,6,10,5,9,1,2,8,4,4,7,1,4,1,7,6,1,5,5,7,3,1,5,8,7,10,3,3,3,9,8,9,8,7,5,6,10,10,4,2,5,6,1,9,9,5,3,8,7,5,2,8,9,2,10,1,5,1,3,8,7,3,4,1,1,8,4,6,10,7,5,7,7,3,9,6,5,8,6,3,1,6,7,6,6,5,4,5,8,10,3,8,2,1,5,6,3,2,7,4,6,7,6,6,8,7,4,9,7,6,1,9,2,9,4,5,8,2,7,10,7,1,7,3,7,4,6,3,10,4,1,1,7,10,4,8,3,2,6,4,10,3,6,6,7,6,3,2,8,1,9,5,9,10,5,1,8,7,6,6,4,8,4,9,4,8,9,1,5,10,5)
+          val cluster: Array[Int] = Array.fill(sN)(Random.nextInt(C))
           val temp: Array[Int] = (1 to C).toArray
           Q.indices.map(i => Q(i).indices.map(j => if (cluster(i) == temp(j)) Q (i)(j) = 1 else Q (i)(j) = 0))
-          //println(Q.deep.mkString("\n"))
         }
         // update clusters assignment
         else{
           // start
           var distr_c : Array[Array[Array[Double]]] = Array.ofDim(sN, sT, sV)
-          //println(sX.length,sX(0).length, sX(0)(0).length)
-          //println(sN, sT, sV)
           for (c <- 0 until C){
             for (j <- 0 until sN){
               for (k <- 0 until sT) {
@@ -358,12 +347,6 @@ object  GMM_MAP_EM{
                   var temp: Double = 0
                   // need to update in term of dimension array
                   temp = normpdf(sX(j)(k)(l), mu(k)(l)(c), sqrt(s2(l)(c)))
-                  //if (temp > 1){
-                  //  print(temp)
-                  //  print(" ")
-                  //  print(sX(j)(k)(l), mu(k)(l)(c), s2(l)(c))
-                  //  println()
-                  //}
                   if (temp < normpdf(3)){
                     temp = normpdf(3)
                   }
@@ -382,8 +365,6 @@ object  GMM_MAP_EM{
                 }
               }
             }
-            //println(temp1.deep.mkString("\n"))
-            //distr_c.indices.map(i => distr_c(i).indices.map(j =>  distr_c.indices.map(k => temp1(i)(k*sT+j) = distr_c(i)(j)(k))))
             // product of distribution function
             var prod_distrc_c : Array[Double] = Array.fill(sN)(1)
             for (j <- 0 until sN){
@@ -396,12 +377,9 @@ object  GMM_MAP_EM{
             }
             //end
           }
-//          println()
-//          println(distr_c.deep.mkString("\n"))
-//          println()
+
           val sumtQ = Array.fill(C)(Q.map(_.sum)).transpose
           Q.indices.map(i =>  Q(i).indices.map(j => Q(i)(j)/= sumtQ(i)(j)))
-          //println(Q.deep.mkString("\n"))
           //end
         }
         // update mu, s2 and theta
@@ -414,28 +392,20 @@ object  GMM_MAP_EM{
             val var2 = sT * sumQ
             val temp_var2 = (DenseMatrix(sX.map(_.map(_(v))):_*) - DenseMatrix(Array.fill(sN)(mu.map(_.map(_(c))).map(_(v))):_*)).map(x => x*x)
             val var1 = DenseVector(Q.map(_(c)):_*).t dot sum(temp_var2, Axis._1).t
-            //println((DenseMatrix(sX.map(_.map(_(v))):_*)))
             s2(v)(c) = (n0*s2_0(v) + var1) / (n0 + var2)
 
             val A =  DenseMatrix(invS_0(v):_*) + (sumQ/s2(v)(c))* DenseMatrix.eye[Double](sT)
             val b =  DenseMatrix(invS_0(v):_*) * DenseMatrix(mu_0.map(_(v)):_*) + DenseMatrix(sX.map(_.map(_(v))):_*).t * DenseMatrix(Q.map(_(c)):_*) / s2(v)(c)
             val temp_r : Array[Double] = (A \ b).toArray
-//            println(temp_r.deep.mkString(" "))
-//            println()
             for (t <- 0 until sT){
               mu(t)(v)(c) = temp_r(t)
             }
-            //mu.map(_.map(_(c))).map(_(v)).indices.map(x => mu(x)(v)(c) = temp_r(x))
           }
         }
-//        println()
-//        println(s2.deep.mkString("\n"))
-//        println()
       } // end for i=1:I
 
       // compute assignments for all data
       Q  = GMMposterior.GMM_posterior(x, C, mu, s2, theta, dim_idx, time_idx, missing)
-      // DONE FIXBUGS SINCE THERE
 
     } else {
       print("The value of the variable missing is not 0 or 1")

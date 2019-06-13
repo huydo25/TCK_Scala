@@ -20,7 +20,8 @@ object TCK {
   // OUTPUTS
   //    K: kernel matrix
 
-  if (marking == 0 ){
+
+    if (marking == 0 ){
     // Check if the dataset contains mising elements
     val nan_idx = isNaN(xte)
     var sum = 0
@@ -37,15 +38,15 @@ object TCK {
       missing = 0
       //println("The dataset does not contain missing data\n\n")
     }
-
     var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,xte.length)(0.0)
     var result: DenseMatrix[Double] = DenseMatrix.zeros(gmmParameter(0)._1.length,xte.length)
     for (i <- 0 until G*(C-1)){
-      val c = floor((i-1)/G) +2
+      val c = floor((i)/G).toInt + 2
       val q : Array[Array[Double]] = GMMposterior.GMM_posterior( xte, c, gmmParameter(i)._2, gmmParameter(i)._3,
                                               gmmParameter(i)._4, gmmParameter(i)._5, gmmParameter(i)._6, missing)
       result = result + DenseMatrix(gmmParameter(i)._1:_*) * DenseMatrix(q:_*).t
     }
+      result = result.t
     for (k <- 0 until result.rows ){
       K(k) = result(::,k).toArray
     }
@@ -53,6 +54,7 @@ object TCK {
   }  else { // in-sample kernel matrix
     var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,gmmParameter(0)._1.length)(0)
     var result: DenseMatrix[Double] = DenseMatrix.zeros(gmmParameter(0)._1.length,gmmParameter(0)._1.length)
+
     for (i <- 0 until G*(C-1)){
       result = result + DenseMatrix(gmmParameter(i)._1:_*) * DenseMatrix(gmmParameter(i)._1:_*).t
     }
