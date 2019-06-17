@@ -68,6 +68,7 @@ object Main{
     // Compute similarity between Xte and the training points
     var Kte = TCK(gmmParameter,C,G,0,Xte)
 
+
     // 1NN -classifier
     val Nte = Yte.length
     var I : Array[Int] = Array.ofDim(Kte(0).length)
