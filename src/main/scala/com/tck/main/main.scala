@@ -15,13 +15,51 @@ object Main{
       .toArray
   }
   def main(args: Array[String]): Unit = {
-    val resourcesPath = getClass.getResource("/x_VAR.csv")
-    val x = readCSV(resourcesPath.getPath)
-    val resourcesPath1 = getClass.getResource("/xte_VAR.csv")
-    val xte = readCSV(resourcesPath1.getPath)
+//    val resourcesPath = getClass.getResource("/x_VAR.csv")
+//    val x = readCSV(resourcesPath.getPath)
+//    val resourcesPath1 = getClass.getResource("/xte_VAR.csv")
+//    val xte = readCSV(resourcesPath1.getPath)
+//
+//    // Reshape raw data into MTS
+//    var X : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
+//    for(i <- 0 until x.length ){
+//      for (j <- 0 until x(i).length){
+//        if ( j < (x(i).length/2)){
+//          X(i)(j)(0) = x(i)(j)
+//        }
+//        else{
+//          X(i)(j-x(i).length/2)(1) = x(i)(j)
+//        }
+//      }
+//    }
+//    // label data
+//    var Y = Array.fill(200)(1)
+//    for (i <- 100 until  Y.length  ){
+//      Y(i) += 1
+//    }
+//
+//    //println(sum((DenseMatrix(X.map(_.map(_(0))):_*) - DenseMatrix(Array.fill(200)(X.map(_.map(_(0))).map(_(0)).slice(0,50)):_*)).map(x => x*x), Axis._1).t)
+//    // Reshape xte data into MTS
+//    var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
+//    for(i <- 0 until xte.length  ){
+//      for (j <- 0 until xte(i).length){
+//        if ( j < (xte(i).length/2)){
+//          Xte(i)(j)(0) = xte(i)(j)
+//        }
+//        else{
+//          Xte(i)(j-x(i).length/2)(1) = xte(i)(j)
+//        }
+//      }
+//    }
+//    val Yte =Y
 
+    val resourcesPath = getClass.getResource("/penDigits/pendigits_train.csv")
+    val rawx : Array[Array[Double]]= readCSV(resourcesPath.getPath)
+
+    val x = rawx.map(_.slice(0,rawx(0).length-1))
+    //println(x.length,x(0).length)
     // Reshape raw data into MTS
-    var X : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
+    var X : Array[Array[Array[Double]]] = Array.ofDim[Double](x.length,x(0).length/2,2)
     for(i <- 0 until x.length ){
       for (j <- 0 until x(i).length){
         if ( j < (x(i).length/2)){
@@ -33,25 +71,29 @@ object Main{
       }
     }
     // label data
-    var Y = Array.fill(200)(1)
-    for (i <- 100 until  Y.length  ){
-      Y(i) += 1
-    }
+    var Y :Array[Int] = rawx.map(_(rawx(0).length-1)).map(x => x.toInt)
+    //println(X.deep.mkString("\n"))
 
-    //println(sum((DenseMatrix(X.map(_.map(_(0))):_*) - DenseMatrix(Array.fill(200)(X.map(_.map(_(0))).map(_(0)).slice(0,50)):_*)).map(x => x*x), Axis._1).t)
+    // test data
+    val resourcesPath1 = getClass.getResource("/penDigits/pendigits_test.csv")
+    val rawXte = readCSV(resourcesPath1.getPath)
+    val xte = rawXte.map(_.slice(0,rawXte(0).length-1))
+    //println(xte.length, xte(0).length)
     // Reshape xte data into MTS
-    var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](200,50,2)
+    var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](xte.length,xte(0).length/2,2)
     for(i <- 0 until xte.length  ){
       for (j <- 0 until xte(i).length){
         if ( j < (xte(i).length/2)){
           Xte(i)(j)(0) = xte(i)(j)
         }
         else{
-          Xte(i)(j-x(i).length/2)(1) = xte(i)(j)
+          Xte(i)(j-xte(i).length/2)(1) = xte(i)(j)
         }
       }
     }
-    val Yte =Y
+    val Yte :Array[Int] = rawXte.map(_(rawXte(0).length-1)).map(x => x.toInt)
+    //println(Yte.length)
+    //println(Xte.length, Xte(0).length, Xte(0)(0).length)
 
     var gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
     var C: Int = 0
@@ -67,6 +109,8 @@ object Main{
     println("Done training TCK")
     // Compute similarity between Xte and the training points
     var Kte = TCK(gmmParameter,C,G,0,Xte)
+
+    //println(Kte.length, Kte(0).length)
 
 
     // 1NN -classifier

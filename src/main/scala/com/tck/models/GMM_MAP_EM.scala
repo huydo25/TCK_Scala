@@ -80,10 +80,10 @@ object  GMM_MAP_EM{
 
     val t1 =  1 + Random.nextInt(T-minT+1)
     val t2 = (t1 + minT - 1) + Random.nextInt(min(T,(t1 + maxT -1)) - (t1 + minT -1) +1) - 1
-    val sT = t2 - t1 +1
-    //val sT = 20
-    val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
-    //val time_idx = (10 to 29).toArray
+    //val sT = t2 - t1 +1
+    val sT = T
+    //val time_idx: Array[Int] = (t1 to t2).toArray // generate sT continuous integers from t1 to t2
+    val time_idx = (0 to T-1).toArray
 
     val sX: Array[Array[Array[Double]]] = Array.ofDim(sub_idx.length, time_idx.length, dim_idx.length)
     for (i <- 0 until sN){

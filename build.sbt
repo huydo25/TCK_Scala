@@ -1,8 +1,6 @@
 name := "Time-Cluster-Kernel"
-
 version := "0.1"
 scalaVersion := "2.11.4"
-
 libraryDependencies ++= {
   val sparkVer = "2.1.0"
   Seq(
@@ -20,3 +18,4 @@ libraryDependencies ++= {
     "org.scalanlp" %% "breeze-viz" % "0.12"
   )
 }
+

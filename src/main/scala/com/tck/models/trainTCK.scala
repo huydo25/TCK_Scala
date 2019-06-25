@@ -8,7 +8,7 @@ object trainTCK{
   def trainTCK(x: Array[Array[Array[Double]]],
                C: Int = 40, minN: Double = 0.8,
                minV: Int = 2, maxV: Int = 2,
-               minT : Int =6, maxT: Int = 25,
+               minT : Int =6, maxT: Int = 8,
                I: Int = 20,  G: Int = 30): (List[ (Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])], Int, Int) = {
 
     // trainTCK - Train the TCK

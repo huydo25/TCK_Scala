@@ -39,6 +39,7 @@ object computeKM_TCK {
       //println("The dataset does not contain missing data\n\n")
     }
     var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,xte.length)(0.0)
+    println(K.length, K(0).length)
     var result: DenseMatrix[Double] = DenseMatrix.zeros(gmmParameter(0)._1.length,xte.length)
     for (i <- 0 until G*(C-1)){
       val c = floor((i)/G).toInt + 2
@@ -46,10 +47,14 @@ object computeKM_TCK {
                                               gmmParameter(i)._4, gmmParameter(i)._5, gmmParameter(i)._6, missing)
       result = result + DenseMatrix(gmmParameter(i)._1:_*) * DenseMatrix(q:_*).t
     }
+//      println(result.rows, result.cols)
       result = result.t
-    for (k <- 0 until result.rows ){
+     // println(result.rows, result.cols)
+    for (k <- 0 until K.length) {
+      //println(k, result(::,k).length)
       K(k) = result(::,k).toArray
     }
+
     K
   }  else { // in-sample kernel matrix
     var K : Array[Array[Double]] = Array.fill(gmmParameter(0)._1.length,gmmParameter(0)._1.length)(0)
