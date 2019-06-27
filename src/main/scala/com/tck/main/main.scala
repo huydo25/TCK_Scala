@@ -53,10 +53,10 @@ object Main{
 //    }
 //    val Yte =Y
 
-    val resourcesPath = getClass.getResource("/penDigits/pendigits_train.csv")
+    val resourcesPath = getClass.getResource("/ECG/train_preprocessed.csv")
     val rawx : Array[Array[Double]]= readCSV(resourcesPath.getPath)
 
-    val x = rawx.map(_.slice(0,rawx(0).length-1))
+    val x = rawx.map(_.slice(0,rawx(0).length))
     //println(x.length,x(0).length)
     // Reshape raw data into MTS
     var X : Array[Array[Array[Double]]] = Array.ofDim[Double](x.length,x(0).length/2,2)
@@ -71,13 +71,15 @@ object Main{
       }
     }
     // label data
-    var Y :Array[Int] = rawx.map(_(rawx(0).length-1)).map(x => x.toInt)
+    val resourcesPath_tl = getClass.getResource("/ECG/label_train_preprocessed.csv")
+    val rawy : Array[Array[Double]]= readCSV(resourcesPath_tl.getPath)
+    val Y = rawy.flatten.map(x=> x.toInt)
     //println(X.deep.mkString("\n"))
 
     // test data
-    val resourcesPath1 = getClass.getResource("/penDigits/pendigits_test.csv")
+    val resourcesPath1 = getClass.getResource("/ECG/test_preprocessed.csv")
     val rawXte = readCSV(resourcesPath1.getPath)
-    val xte = rawXte.map(_.slice(0,rawXte(0).length-1))
+    val xte = rawXte.map(_.slice(0,rawXte(0).length))
     //println(xte.length, xte(0).length)
     // Reshape xte data into MTS
     var Xte : Array[Array[Array[Double]]] = Array.ofDim[Double](xte.length,xte(0).length/2,2)
@@ -91,9 +93,10 @@ object Main{
         }
       }
     }
-    val Yte :Array[Int] = rawXte.map(_(rawXte(0).length-1)).map(x => x.toInt)
-    //println(Yte.length)
-    //println(Xte.length, Xte(0).length, Xte(0)(0).length)
+
+    val resourcesPath_tel = getClass.getResource("/ECG/label_test_preprocessed.csv")
+    val rawyte : Array[Array[Double]]= readCSV(resourcesPath_tel.getPath)
+    val Yte = rawyte.flatten.map(x=> x.toInt)
 
     var gmmParameter : List[(Array[Array[Double]], Array[Array[Array[Double]]], Array[Array[Double]],Array[Double], Array[Int], Array[Int])]  = List()
     var C: Int = 0

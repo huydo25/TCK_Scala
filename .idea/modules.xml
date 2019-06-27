@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/time-cluster-kernel.iml" filepath="$PROJECT_DIR$/.idea/modules/time-cluster-kernel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/time-cluster-kernel-build.iml" filepath="$PROJECT_DIR$/.idea/modules/time-cluster-kernel-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Time-Cluster-Kernel.iml" filepath="$PROJECT_DIR$/.idea/modules/Time-Cluster-Kernel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Time-Cluster-Kernel-build.iml" filepath="$PROJECT_DIR$/.idea/modules/Time-Cluster-Kernel-build.iml" />
     </modules>
   </component>
 </project>
