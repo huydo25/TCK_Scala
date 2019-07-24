@@ -1,23 +1,17 @@
 package com.tck.utils
 
-import scala.math._
+import breeze.linalg._
+import breeze.stats._
+
+import scala.math.{exp, pow, sqrt, Pi}
 
 object Utils{
 
-  def isNaN(x: Array[Array[Array[Double]]]) : Array[Array[Array[Double]]] =  {
-    var binary_vector: Array[Array[Array[Double]]] = Array.ofDim(x.length, x(0).length, x(0)(1).length)
-    for (i <- 0 until x.length){
-      for (j <- 0 until  x(i).length){
-        for (k <- 0 until  x(i)(j).length){
-          if (x(i)(j)(k).isNaN){
-            binary_vector(i)(j)(k) = 1
-          } else{
-            binary_vector(i)(j)(k) = 0
-          }
-        }
-      }
-    }
-    binary_vector
+  def isNaN(x: Array[Array[Array[Double]]]): Array[Array[Array[Double]]] = {
+    var bv: Array[Array[Array[Double]]] = Array.ofDim(x.length, x(0).length, x(0)(0).length)
+    bv.indices.map(a => bv(a).indices.map(b => bv(a)(b).indices.map(c => {if (x(a)(b)(c).isNaN) bv(a)(b)(c) = 1
+                                                                          else bv(a)(b)(c) = 0 } ) ) )
+    bv
   }
 
   def normpdf(x: Double, mu: Double = 0.0, sigma: Double = 1.0 ): Double ={
@@ -30,105 +24,115 @@ object Utils{
     val y: Double = exp(-0.5 * pow(((x - mu) / sigma),2 ) ) / (sqrt(2*Pi) * sigma)
     y
   }
-
-  def nanmean2D(x : Array[Array[Double]], dim: Int = 1): Array[Double]={
-    var mean: Array[Double] = Array()
-    if (dim == 1){
-      mean = Array.ofDim(x.length)
-      var sum = 0.0
-      var idx = 0.0
-      for (i <- 0 until x.length){
-        sum = 0.0 ; idx = 0.0
-        for (j <- 0 until x(i).length){
-          if (x(i)(j).isNaN){
-            sum += 0
-            idx += 0
-          } else {
-            sum += x(i)(j)
-            idx += 1
-          }
-        }
-        //        println (sum, idx, mean.length)
-        mean(i) = sum / idx
+  def nanMean(x : Array[Array[Double]], dim: Int =1 ):  Array[Double] = {
+    assert(dim == 0 || dim == 1 , "Dimension is between 0 and 1")
+    var m: Array[Double] = Array()
+    var check:Double = 0.0
+    x.map( a => a.map(b => if(b.isNaN) check += 1.0 ))
+    if (check == 0.0){
+      val temp = DenseMatrix(x:_*)
+      //println(temp)
+      if (dim == 0){
+        m = mean(temp(::,*)).t.toArray
+      } else {
+        m = mean(temp(*,::)).toArray
       }
-    } else if (dim == 0){
-      mean = Array.ofDim(x(0).length)
-      var sum = Array.fill(x(0).length)(0.0)
-      var idx = Array.fill(x(0).length)(0)
-      for (i <- 0 until x.length){
-        for (j <- 0 until x(i).length){
-          if (x(i)(j).isNaN){
-            sum(j) += 0.0
-            idx(j) += 0
-          } else {
-            sum(j) += x(i)(j)
-            idx(j) += 1
-          }
-        }
-      }
-      //      println( sum.deep.mkString("\n"))
-      //      println( idx.deep.mkString("\n"))
-      for (i <- 0 until mean.length){
-        mean(i) = sum(i)/idx(i)
-      }
+      m
     } else {
-      sys.error("dimension is between 0 and 1")
-    }
-    mean
-  }
-
-  def nanstd2D(x : Array[Array[Double]], flag: Int = 0 ,dim: Int = 0): Array[Double]={
-    var std: Array[Double] = Array()
-    var mean: Array[Double] = Array()
-    // std on sample
-    if (flag == 0) {
       if (dim == 1){
-        mean = Array.ofDim(x.length)
-        std = Array.ofDim(x.length)
+        m = Array.ofDim(x.length)
         var sum = 0.0
         var idx = 0.0
-        for (i <- 0 until x.length){
-          sum = 0.0 ; idx = 0.0
-          for (j <- 0 until x(i).length){
-            if (x(i)(j).isNaN){
-              sum += 0
-              idx += 0
-            } else {
-              sum += x(i)(j)
-              idx += 1
-            }
-          }
-          // println (sum, idx, mean.length)
-          mean(i) = sum / idx
-          std(i) = sqrt(x(i).map(x => if (x.isNaN) 0 else pow(x - mean(i), 2)).sum / (idx - 1))
-        }
-      } else if (dim == 0){
-        mean = Array.ofDim(x(0).length)
-        std = Array.ofDim(x(0).length)
-        var sum = Array.fill(x(0).length)(0.0)
-        var idx = Array.fill(x(0).length)(0)
-
-        for (i <- 0 until x.length){
-          for (j <- 0 until x(i).length){
-            if (x(i)(j).isNaN){
-              sum(j) += 0.0
-              idx(j) += 0
-            } else {
-              sum(j) += x(i)(j)
-              idx(j) += 1
-            }
-          }
-        }
-        for (i <- 0 until mean.length){
-          mean(i) = sum(i)/idx(i)
-          std(i) = sqrt(x.map(_(i)).map(x => if (x.isNaN) 0 else pow(x - mean(i), 2)).sum / (idx(i) - 1))
-        }
-      } else {
-        sys.error("dimension is between 0 and 1")
+        x.indices.map( a => {sum = 0.0 ; idx = 0.0; x(a).map(b => if (!b.isNaN) {sum += b; idx += 1});
+                                  m(a) = sum/idx;})
+      } else{
+        m = Array.ofDim(x(0).length)
+        val sum = Array.fill(x(0).length)(0.0)
+        val idx = Array.fill(x(0).length)(0.0)
+        x.indices.map( a => {x(a).indices.map(b => {if (!x(a)(b).isNaN) {sum(b) += x(a)(b);idx(b) += 1;}})})
+        m.indices.map( a => m(a) = sum(a)/idx(a))
       }
+      m
     }
-    std
   }
 
-}
+  def nanStd(x : Array[Array[Double]] ,dim: Int = 0): Array[Double]= {
+    assert(dim == 0 || dim == 1 , "Dimension is between 0 and 1")
+    var m: Array[Double] = Array()
+    var std: Array[Double] = Array()
+    var check:Double = 0.0
+    x.map( a => a.map(b => if(b.isNaN) check += 1.0 ))
+    if (check == 0.0){
+      val temp = DenseMatrix(x:_*)
+      //println(temp)
+      if (dim == 0){
+        m = mean(temp(::,*)).t.toArray
+        std = stddev(temp(::,*)).t.toArray
+      } else {
+        m = mean(temp(*,::)).toArray
+        std = stddev(temp(*,::)).toArray
+      }
+      std
+    } else {
+      if (dim == 1){
+        m = Array.ofDim(x.length)
+        std = Array.ofDim(x.length)
+        var sum: Array[Double] = Array.fill(x.length)(0.0)
+        var idx: Array[Double] = Array.fill(x.length)(0.0)
+        x.indices.map( a => {x(a).map(b => if (!b.isNaN) {sum(a) += b; idx(a) += 1}); m(a) = sum(a)/idx(a);})
+        x.indices.map( a => std(a) = sqrt(x(a).map(b => if (b.isNaN) 0 else pow(b - m(a), 2)).sum / (idx(a) - 1)))
+      } else{
+        m = Array.ofDim(x(0).length)
+        std = Array.ofDim(x(0).length)
+        val sum = Array.fill(x(0).length)(0.0)
+        val idx = Array.fill(x(0).length)(0.0)
+        x.indices.map( a => {x(a).indices.map(b => {if (!x(a)(b).isNaN) {sum(b) += x(a)(b);idx(b) += 1;}})})
+        m.indices.map( a => m(a) = sum(a)/idx(a))
+        std.indices.map(a  => std(a) = sqrt(x.map(_(a)).map(b => if (b.isNaN) 0 else pow(b - m(a), 2)).sum / {if (idx(a) > 1) (idx(a) - 1)  else 1} ) )
+      }
+      std
+    }
+  }
 
+  /*def nanMeanStd(x : Array[Array[Double]] ,dim: Int = 0): (Array[Double], Array[Double])= {
+    assert(dim == 0 || dim == 1 , "Dimension is between 0 and 1")
+    var m: Array[Double] = Array()
+    var std: Array[Double] = Array()
+    var check:Double = 0.0
+    x.map( a => a.map(b => if(b.isNaN) check += 1.0 ))
+    if (check == 0.0){
+      val temp = DenseMatrix(x:_*)
+      //println(temp)
+      if (dim == 0){
+        m = mean(temp(::,*)).t.toArray
+        std = stddev(temp(::,*)).t.toArray
+      } else {
+        m = mean(temp(*,::)).toArray
+        std = stddev(temp(*,::)).toArray
+      }
+      (m,std)
+    } else {
+      if (dim == 1){
+        m = Array.ofDim(x.length)
+        std = Array.ofDim(x.length)
+        var sum: Array[Double] = Array.fill(x.length)(0.0)
+        var idx: Array[Double] = Array.fill(x.length)(0.0)
+        x.indices.map( a => {x(a).map(b => if (!b.isNaN) {sum(a) += b; idx(a) += 1}); m(a) = sum(a)/idx(a);})
+        x.indices.map( a => std(a) = sqrt(x(a).map(b => if (b.isNaN) 0 else pow(b - m(a), 2)).sum / (idx(a) - 1)))
+      } else{
+        m = Array.ofDim(x(0).length)
+        std = Array.ofDim(x(0).length)
+        val sum = Array.fill(x(0).length)(0.0)
+        val idx = Array.fill(x(0).length)(0.0)
+        x.indices.map( a => {x(a).indices.map(b => {if (!x(a)(b).isNaN) {sum(b) += x(a)(b);idx(b) += 1;}})})
+        m.indices.map( a => m(a) = sum(a)/idx(a))
+        std.indices.map(a  => std(a) = sqrt(x.map(_(a)).map(b => if (b.isNaN) 0 else pow(b - m(a), 2)).sum / {if (idx(a) > 1) (idx(a) - 1)  else 1} ) )
+      }
+      (m,std)
+    }
+  }*/
+
+
+
+
+}
